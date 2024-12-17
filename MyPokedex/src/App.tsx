@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-
+       <h1>MyPokedex</h1>
       <PokemonList></PokemonList>
         
     </>
