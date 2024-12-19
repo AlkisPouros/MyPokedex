@@ -1,6 +1,11 @@
 
 import './App.css'
 import  PokemonList  from './PokemonList.tsx'
+import PokeInfo from './PokeInfo.tsx'
+import { Route, Routes } from 'react-router-dom';
+import React from 'react';
+
+
 
 function App() {
   
@@ -8,9 +13,13 @@ function App() {
 
   return (
     <>
+    
        <h1>MyPokedex</h1>
-      <PokemonList></PokemonList>
-        
+        <Routes>
+          <Route path="/" element={<PokemonList/>}/>
+          <Route path="/PokeInfo/:id" element={<PokeInfo/>}/>
+        </Routes>
+
     </>
   )
 }

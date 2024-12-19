@@ -1,5 +1,6 @@
 import React from 'react'
 import { apilink } from './PokeApiLinks';
+import { Link } from 'react-router-dom';
 
 interface apiProps{
     results : [];
@@ -88,6 +89,7 @@ const PokemonList = () => {
                         <td>{index + counter}</td>
                         <td>{Object.values(info)[0] as string}</td>
                         <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter)}></input></td>
+                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string}}>Info</Link></button>)}</td>
                     </tr>
              ))}
              
