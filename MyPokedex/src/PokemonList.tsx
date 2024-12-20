@@ -7,7 +7,9 @@ interface apiProps{
 }
 interface spriteProps {
   front_sprite: string;
+  back_sprite: string;
 }
+
 //const pokemonCount = 151;
 
 
@@ -16,10 +18,10 @@ const PokemonList = () => {
     const [spriteData, setspriteData] = React.useState<spriteProps | null>(null);
     const [counter, setCounter] = React.useState<number>(0);
     React.useEffect(() => {
-        fetchDataApi(counter);
+        fetchDataFromApi(counter);
       }, []);
-    
 
+    //Fetching from PokeAPI the pokemon sprites
       const getPokemonSprites = async (num: number) => {
         try{
           
@@ -29,8 +31,10 @@ const PokemonList = () => {
             // For testing purposes
             const PokemonSprites = {
               front_sprite: pokemonSprite["sprites"]["front_default"] as string,
-           }
+              back_sprite: pokemonSprite["sprites"]["back_default"] as string,
+            }
             console.log(pokemonSprite["sprites"]["front_default"]);
+            console.log(pokemonSprite["sprites"]["back_default"] as string);
             setspriteData(PokemonSprites);
             
         }
@@ -39,14 +43,14 @@ const PokemonList = () => {
           console.error("something went wrong " + error);
         }
       }
-      //Fetching form PokeAPI
-      const fetchDataApi = async (number: number) => {
+      //Fetching from PokeAPI
+      const fetchDataFromApi = async (number: number) => {
         try {
           const response = await fetch(apilink + `?offset=${number}&limit=10`)
           const PokeData = await response.json();
           // For testing purposes
           const pokemon = {
-           results : PokeData?.results
+           results : PokeData?.results,
           };  
          
           setApiData(pokemon);
@@ -54,12 +58,13 @@ const PokemonList = () => {
           console.log(PokeData);
           apiData?.results.map((info, index) => (
             console.log(index + counter, info[1])))
-        
+          
         }
         catch (error)
         {
           console.error("Something went wrong", error);
         }
+        
         
       }
       
@@ -67,7 +72,7 @@ const PokemonList = () => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const Nextnumber = number + 10;      
           setCounter(Nextnumber);
-          fetchDataApi(Nextnumber);
+          fetchDataFromApi(Nextnumber);
       };
 
       
@@ -85,11 +90,13 @@ const PokemonList = () => {
         <table>
             <tbody>
                 {apiData && apiData?.results.map((info, index) => (
-                    <tr key = {index}>
+                    <tr key = {index + 1}>
                         <td>{index + counter}</td>
                         <td>{Object.values(info)[0] as string}</td>
                         <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter)}></input></td>
-                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string}}>Info</Link></button>)}</td>
+                        <td><input type="button" value="Add"></input></td>
+                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string, sprite_back: spriteData?.back_sprite as string}}>Info</Link></button>)}</td>
+                        
                     </tr>
              ))}
              
