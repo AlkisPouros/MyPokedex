@@ -3,14 +3,28 @@ import './App.css'
 import  PokemonList  from './PokemonList.tsx'
 import PokeInfo from './PokeInfo.tsx'
 import { Route, Routes } from 'react-router-dom';
-import React from 'react';
+import React, { useEffect } from 'react';
+import Favourites from './Favourites.tsx';
 
 
 
 function App() {
-  
 
 
+// For testing purposes
+const fetchAPI = async () => {
+  try {
+      const response = await fetch("http://localhost:5000/api");
+      const data = await response.json();
+      console.log(data.fruits as JSON);
+  }catch(error)
+  {
+    console.error("Something went wrong ", error);
+  }
+}
+useEffect(() => {
+  fetchAPI();
+},[])
   return (
     <>
     
@@ -18,6 +32,7 @@ function App() {
         <Routes>
           <Route path="/" element={<PokemonList/>}/>
           <Route path="/PokeInfo/:id" element={<PokeInfo/>}/>
+          <Route path="/Favourites" element={<Favourites/>}/>
         </Routes>
 
     </>

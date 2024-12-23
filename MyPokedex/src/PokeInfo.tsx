@@ -13,7 +13,7 @@ interface FlavorTextEntry {
     flavor_text_entries: FlavorTextEntry[];  // An array of FlavorTextEntry
   }
 
-const PokeInfo = ()=> {
+const PokeInfo = () => {
 
     const location = useLocation();
     const { id, name, sprite, sprite_back } = location.state || {};
@@ -38,7 +38,7 @@ const PokeInfo = ()=> {
         console.error("Something went wrong error "+ error);
       }
     }
-    // Retrieve the first flavor text in English
+    // Retrieving the first flavor text in English
     const getFirstFlavorText = () => {
         if (PokespeciesData?.flavor_text_entries) {
         // Find the first entry with language 'en'

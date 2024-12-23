@@ -2,7 +2,7 @@ import React from 'react'
 import { apilink } from './PokeApiLinks';
 import { Link } from 'react-router-dom';
 
-interface apiProps{
+interface apiProps {
     results : [];
 }
 interface spriteProps {
@@ -74,7 +74,26 @@ const PokemonList = () => {
           setCounter(Nextnumber);
           fetchDataFromApi(Nextnumber);
       };
-
+      const addToFavourites = async (number : number, name : string, sprite: string ) => {
+        const response = await fetch('http://localhost:5000/api/favourites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: number,
+            name: name,
+            sprite: sprite,
+          }),
+        });
+        if(response.ok)
+        {
+          console.log("Pokemon added");
+        }
+        else{
+          console.error("Pokemon hasnt been added");
+        }
+      }
       
     return (
       <>
@@ -93,9 +112,8 @@ const PokemonList = () => {
                     <tr key = {index + 1}>
                         <td>{index + counter}</td>
                         <td>{Object.values(info)[0] as string}</td>
-                        <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter)}></input></td>
-                        <td><input type="button" value="Add"></input></td>
-                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string, sprite_back: spriteData?.back_sprite as string}}>Info</Link></button>)}</td>
+                        <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index)}></input></td>
+                        <td><button type="button" onClick={()=> addToFavourites(index + counter, Object.values(info)[0] as string, spriteData?.front_sprite as string)}><Link to={'/Favourites'}>Add</Link></button></td>
                         
                     </tr>
              ))}
