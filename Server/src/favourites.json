@@ -2,26 +2,30 @@
   {
     "id": 0,
     "name": "bulbasaur",
-    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
-  },
-  {
-    "id": 2,
-    "name": "venusaur",
-    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
-  },
-  {
-    "id": 0,
-    "name": "bulbasaur",
-    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
-  },
-  {
-    "id": 0,
-    "name": "bulbasaur",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
   },
   {
     "id": 0,
-    "name": "bulbasaur",
-    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+    "name": "bulbasaur"
+  },
+  {
+    "id": 5,
+    "name": "charizard",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"
+  },
+  {
+    "id": 9,
+    "name": "caterpie",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png"
+  },
+  {
+    "id": 18,
+    "name": "rattata",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png"
+  },
+  {
+    "id": 19,
+    "name": "raticate",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/20.png"
   }
 ]

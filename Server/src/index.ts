@@ -36,13 +36,17 @@ const writeFavouritesToFile = (favourites: { id: number; name: string; sprite: s
 
 app.post('/api/favourites', (req :Request, res: Response) => {
   try {
-    const { id, name, sprite} = req.body;
+    const { id, name, sprite } = req.body;
     const newFavourite = { id, name, sprite };
+    
     const favourites = readFavouritesFromFile();
-    favourites.push(newFavourite);
-    // Write the updated favourites list to the file
-    writeFavouritesToFile(favourites);
-    res.status(201).json(newFavourite);
+    const found = favourites.some(element => element.id === id);
+    if (!found){
+      favourites.push(newFavourite);
+      // Write the updated favourites list to the file
+      writeFavouritesToFile(favourites);
+      res.status(201).json(newFavourite);
+    }
   }catch(error)
   {
     console.error("Error" , error);

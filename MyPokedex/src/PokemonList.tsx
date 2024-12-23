@@ -112,8 +112,9 @@ const PokemonList = () => {
                     <tr key = {index + 1}>
                         <td>{index + counter}</td>
                         <td>{Object.values(info)[0] as string}</td>
-                        <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index)}></input></td>
-                        <td><button type="button" onClick={()=> addToFavourites(index + counter, Object.values(info)[0] as string, spriteData?.front_sprite as string)}><Link to={'/Favourites'}>Add</Link></button></td>
+                        <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter)}></input></td>
+                        <td><button type="button" onClick={()=> addToFavourites(index + counter, Object.values(info)[0] as string, spriteData?.front_sprite as string)}>Add</button></td>
+                        <td><button type="button"><Link to={'/Favourites'}>Favourites</Link></button></td>
                         
                     </tr>
              ))}
