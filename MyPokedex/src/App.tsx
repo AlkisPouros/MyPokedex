@@ -1,10 +1,10 @@
 
 import './App.css'
-import  PokemonList  from './PokemonList.tsx'
-import PokeInfo from './PokeInfo.tsx'
+import  PokemonList  from './components/PokemonList.tsx'
+import PokeInfo from './components/PokeInfo.tsx'
 import { Route, Routes } from 'react-router-dom';
 import React, { useEffect } from 'react';
-import Favourites from './Favourites.tsx';
+import Favourites from './components/Favourites.tsx';
 
 
 
