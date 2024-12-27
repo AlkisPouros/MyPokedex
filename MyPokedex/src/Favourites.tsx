@@ -26,6 +26,36 @@ const Favourites = () => {
     useEffect(()=> {
         fetchFromAPI();
     },[])
+    const removeFromFavourites = async (number: number)=>
+    {
+         // Optimistically remove the Pokémon from the local state immediately
+        setFavePokemon((prevFavourites) => 
+        prevFavourites ? prevFavourites.filter(pokemon => pokemon.id !== number) : []
+        );
+        try {
+            const response = await fetch(`http://localhost:5000/api/favourites`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: number,
+                })
+            })
+            if(response.ok)
+            {
+                console.log("pokemon removed");
+            }
+            else {
+
+                console.error("Pokemon isnt removed");
+            }
+        }catch(error)
+        {
+            console.log("Something went wrong", error)
+        }
+
+    }
     return (
 
         <>
@@ -36,7 +66,7 @@ const Favourites = () => {
                             <td>{Object.values(info)[0] as number}</td>
                             <td>{Object.values(info)[1] as string}</td>
                             <td><img src={Object.values(info)[2] as string}></img></td>
-                            <td><input type="button" value="Remove"></input></td>
+                            <td><input type="button" value="Remove" onClick={()=> removeFromFavourites(Object.values(info)[0] as number)}></input></td>
                         </tr>
                     ))}
                     

@@ -52,7 +52,7 @@ app.post('/api/favourites', (req :Request, res: Response) => {
     console.error("Error" , error);
   }
 })
-
+// GET the list of the user's favourite pokemon
 app.get('/api/favourites', (req: Request, res: Response)=> {
   try{
     const favourites = readFavouritesFromFile();
@@ -60,6 +60,25 @@ app.get('/api/favourites', (req: Request, res: Response)=> {
   }catch(error)
   {
     console.log("Error", error);
+  }
+})
+// DELETE a pokemon from the favourites list using its given ID
+app.delete('/api/favourites', (req: Request, res: Response)=> {
+  try{
+    const { id } = req.body;
+    const removedPokemon = { id };
+    let favourites = readFavouritesFromFile();
+    // Remove the Pokémon with the given ID
+    const updatedFavourites = favourites.filter(pokemon => pokemon.id !== id);
+    if (updatedFavourites.length !== favourites.length)
+    {
+       // If it has changed, write the updated list to the file
+       writeFavouritesToFile(updatedFavourites);
+    }
+  }
+  catch(error)
+  {
+    console.error("Error ", error)
   }
 })
 //For testing purposes
