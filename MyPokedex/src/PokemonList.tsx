@@ -114,13 +114,13 @@ const PokemonList = () => {
                         <td>{Object.values(info)[0] as string}</td>
                         <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter)}></input></td>
                         <td><button type="button" onClick={()=> addToFavourites(index + counter, Object.values(info)[0] as string, spriteData?.front_sprite as string)}>Add</button></td>
-                        <td><button type="button"><Link to={'/Favourites'}>Favourites</Link></button></td>
-                        
+                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string, sprite_back: spriteData?.back_sprite as string}}>Info</Link></button>)}</td>
                     </tr>
              ))}
              
              </tbody>
             <input type="button" value = "next" onClick={() => getNext(counter)}></input>
+            <button type="button"><Link to={'/Favourites'}>Favourites</Link></button>
         </table>
         </>
     )

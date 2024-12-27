@@ -61,6 +61,11 @@ const Favourites = () => {
         <>
             <table>
                 <tbody>
+                    {FavPokemon && FavPokemon.length === 0 && (
+                    <tr>
+                        <td>No Pokémon Added</td>
+                    </tr>
+                    )}
                     {FavPokemon && FavPokemon.map((info, index)=>(
                         <tr key = {index + 1}>
                             <td>{Object.values(info)[0] as number}</td>
