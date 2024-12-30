@@ -2,17 +2,11 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import { api_desc_link } from './PokeApiLinks';
 
-// Define a type for the flavor text entries
-interface FlavorTextEntry {
-    flavor_text: string;
-    language: { name: string };
-  }
-  
-  // Define the speciesData interface with the correct structure
-  interface speciesData {
-    flavor_text_entries: FlavorTextEntry[];  // An array of FlavorTextEntry
-  }
 
+// Define the structure of species data
+interface speciesData {
+  flavor_text_entries: { language: { name: string }; flavor_text: string }[];
+}
 const PokeInfo = () => {
 
     const location = useLocation();

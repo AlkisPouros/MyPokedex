@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { fetchFromAPI, pokemon } from '../api/fetchFromAPI';
 import { removeFromFavourites } from '../api/removeFromFavourites';
 
+
 const Favourites = () => {
     
     const [FavPokemon, setFavePokemon ] = React.useState<pokemon[] | null>(null);
-    
     
     useEffect(()=> {
         fetchFromAPI(FavPokemon, setFavePokemon);
