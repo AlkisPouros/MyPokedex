@@ -4,11 +4,11 @@ import { Link } from "react-router-dom";
 
 
 type SearchBarProps = {
-    apiData: apiProps | null;  
-    spriteData: spriteProps | null;
+    apiData: apiProps | null;   
+    spriteDataMap: Map<number, spriteProps>;
   };
 
-const SearchBar =  ({apiData, spriteData}: SearchBarProps) => {
+const SearchBar =  ({apiData, spriteDataMap}: SearchBarProps) => {
 
     const [ searchItem, setSearchQuery ] = useState("");
     const [ foundPokemon, setFoundPokemon ] = useState< string | null>(null);
@@ -41,7 +41,7 @@ const SearchBar =  ({apiData, spriteData}: SearchBarProps) => {
                 <input type="text" value={searchItem} name="search form" onChange={(e)=> setSearchQuery(e.target.value)} placeholder="Give pokemon name or id"></input>
                 
                 {foundPokemon ? (
-                    <Link to = {`/PokeInfo/${foundPokemon}`} state = {{id: Number(foundPokemon), sprite: spriteData?.front_sprite as string, sprite_back: spriteData?.back_sprite as string}}><button>Search</button></Link>) : (<button onClick={handleSearch}>Search</button>)}
+                    <Link to = {`/PokeInfo/${foundPokemon}`} state = {{id: Number(foundPokemon), sprite: spriteDataMap.get(Number(foundPokemon))?.front_sprite as string, sprite_back: spriteDataMap.get(Number(foundPokemon))?.back_sprite as string}}><button>Search</button></Link>) : (<button onClick={handleSearch}>Search</button>)}
                 
             </div>
         </>

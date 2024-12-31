@@ -1,12 +1,8 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
-import { api_desc_link } from './PokeApiLinks';
+import { getPokeDescription, speciesData } from '../api/fetchFromPokeAPI';
 
 
-// Define the structure of species data
-interface speciesData {
-  flavor_text_entries: { language: { name: string }; flavor_text: string }[];
-}
 const PokeInfo = () => {
 
     const location = useLocation();
@@ -14,24 +10,9 @@ const PokeInfo = () => {
     const [PokespeciesData, setPokeSpeciesData] = React.useState<speciesData | null>(null);
    
     React.useEffect(() => {
-        getPokeDescription(id as number);
+        getPokeDescription(id as number, setPokeSpeciesData);
     }, []);
-     //Fetching from PokeAPI the pokemon description 
-    const getPokeDescription = async (num : number) => {
-      
-      try {
-        const response = await fetch(`${api_desc_link}/${num + 1}/`);
-        const pokeDesc = await response.json();
-        console.log(pokeDesc);
-      
-        setPokeSpeciesData(pokeDesc);
-        
-      }
-      catch(error)
-      {
-        console.error("Something went wrong error "+ error);
-      }
-    }
+    
     // Retrieving the first flavor text in English
     const getFirstFlavorText = () => {
         if (PokespeciesData?.flavor_text_entries) {
@@ -51,7 +32,7 @@ const PokeInfo = () => {
             <h2>{name}</h2>
             <img src={sprite}></img>
             <img src={sprite_back}></img>
-            <h2>Pokemon ID: {id + 1}</h2>
+            <h2>Pokemon ID: {id}</h2>
             <button type="button"><Link to="/">Back</Link> </button>
             {getFirstFlavorText() ? (
                 <div>

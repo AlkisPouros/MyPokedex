@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
-import { fetchDataFromApi, getPokemonSprites, addToFavourites, apiProps, spriteProps } from '../api/fetchFromPokeAPI';
+import { fetchDataFromApi, addToFavourites, apiProps, spriteProps } from '../api/fetchFromPokeAPI';
 import SearchBar from './SearchBar';
 
 const PokemonList = () => {
@@ -10,10 +10,10 @@ const PokemonList = () => {
     const [addedPokemons, setAddedPokemons] = React.useState<Set<number>>(new Set()); 
     const SearchAPIData = apiData || {results: []};
     const currentPokemonList = apiData ? apiData.results.slice(counter, counter + 10) : [];
-    
+    const [spriteDataMap, setSpriteDataMap] = React.useState<Map<number, spriteProps>>(new Map());  
 
     React.useEffect(() => {
-        fetchDataFromApi(0, setApiData, apiData, 151);
+        fetchDataFromApi(0, setApiData, apiData, 151, setspriteData, spriteDataMap, setSpriteDataMap);
       }, []);
 
     
@@ -33,33 +33,28 @@ const PokemonList = () => {
     
     return (
       <>
-      <SearchBar apiData = {SearchAPIData} spriteData={spriteData}/>
-      <table>
-        <tbody>
-          <tr>
-            <td>
-            <div><img src = {spriteData?.front_sprite as string}></img></div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <SearchBar apiData = {SearchAPIData} spriteDataMap={spriteDataMap}/>
         <table>
             <tbody>
-                {apiData && currentPokemonList.map((info, index) => (
-                    <tr key = {index + 1}>
-                        <td>{index + counter}</td>
+                {apiData && currentPokemonList.map((info, index) => {
+                  const pokemonId = index + counter;  // ID for the Pokémon (page-specific)
+                  const sprite = spriteDataMap.get(pokemonId + 1);  // Get the sprite for the current Pokémon from the Map
+                  return(
+                    <tr key = {pokemonId}>
+                        <img src={sprite?.front_sprite} alt={info.name} width="70" height="70" />
+                        <td>{index + counter}</td>                       
                         <td>{Object.values(info)[0] as string}</td>
-                        <td><input type="button" value = "view" onClick={()=>getPokemonSprites(index + counter, setspriteData)}></input></td>
                         <td>
                           {addedPokemons.has(index) ? (
                             <span>Pokemon Added</span> 
                               ) : (
-                              <button type="button" onClick={() => handleAddToFavourites(index, Object.values(info)[0] as string, spriteData?.front_sprite as string)}>Add</button>)}
+                              <button type="button" onClick={() => handleAddToFavourites(index + counter, Object.values(info)[0] as string, sprite?.front_sprite as string)}>Add</button>)}
                         </td>
                           
-                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: spriteData?.front_sprite as string, sprite_back: spriteData?.back_sprite as string}}>Info</Link></button>)}</td>
+                        <td>{spriteData && (<button type= "button"><Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: sprite?.front_sprite as string, sprite_back: sprite?.back_sprite as string}}>Info</Link></button>)}</td>
                     </tr>
-             ))}
+                    );
+              })}
              
              </tbody>
              <div>
@@ -67,7 +62,7 @@ const PokemonList = () => {
                 <button onClick={getNext} disabled={counter + 10 >= (apiData?.results.length || 0)}>Next</button>
             </div>
 
-            <button type="button"><Link to={'/Favourites'}>Favourites</Link></button>
+            <button type="button"><Link to={'/Favourites'} state>Favourites</Link></button>
         </table>
         </>
     )
