@@ -1,3 +1,4 @@
+import { server_api_link } from "./PokeApiLinks";
 
 export interface pokemon {
     id: number;
@@ -7,7 +8,7 @@ export interface pokemon {
 
 export const fetchFromAPI = async (FavPokemon: pokemon[] | null, setFavePokemon: React.Dispatch<React.SetStateAction<pokemon[] | null>>) => {
     try {
-        const response = await fetch('http://localhost:5000/api/favourites');
+        const response = await fetch(server_api_link);
         const data = await response.json();
         console.log(data as JSON);
         setFavePokemon(data);

@@ -1,4 +1,4 @@
-import { apilink, server_api_link, api_desc_link } from "../components/PokeApiLinks";
+import { apilink, server_api_link, api_desc_link } from "./PokeApiLinks";
 
 // Define the structure of a single Pokémon
 export interface Pokemon {
@@ -88,8 +88,8 @@ export const fetchDataFromApi = async (number: number, setApiData: React.Dispatc
         
       }
 
-export const addToFavourites = async (number : number, name : string, sprite: string, setAddedPokemon: React.Dispatch<React.SetStateAction<Set<number>>>) => {
-        const response = await fetch(server_api_link, {
+export const addToFavourites = async (number : number, name : string, sprite: string, setAddedPokemon: React.Dispatch<React.SetStateAction<Set<number>>>) => { 
+    const response = await fetch(server_api_link, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

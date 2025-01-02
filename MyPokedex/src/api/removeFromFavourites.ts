@@ -1,6 +1,6 @@
 
 import { pokemon } from "./fetchFromAPI";
-import { server_api_link } from "../components/PokeApiLinks";
+import { server_api_link } from "./PokeApiLinks";
 
 export const removeFromFavourites = async (number: number, setFavePokemon: React.Dispatch<React.SetStateAction<pokemon[] | null>>)=>
     {

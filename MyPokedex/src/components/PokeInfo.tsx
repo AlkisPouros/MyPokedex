@@ -1,7 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import { getPokeDescription, speciesData } from '../api/fetchFromPokeAPI';
-
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import  CardActionArea from '@mui/material/CardActionArea';
+import  CardMedia  from '@mui/material/CardMedia';
+import Button from '@mui/material/Button';
 
 const PokeInfo = () => {
 
@@ -28,19 +33,38 @@ const PokeInfo = () => {
     return(
 
         <>
-            
-            <h2>{name}</h2>
-            <img src={sprite}></img>
-            <img src={sprite_back}></img>
-            <h2>Pokemon ID: {id}</h2>
-            <button type="button"><Link to="/">Back</Link> </button>
-            {getFirstFlavorText() ? (
-                <div>
-                    <p>{getFirstFlavorText()}</p>
-                </div>
-                ) : (
-                    <div>No English description available</div>
-                )}
+        <Card sx = {{ maxWidth: 345, borderRadius: '8%' }}>
+            <CardActionArea>
+                <CardMedia
+                    component="img"
+                    height="140"
+                    image={sprite}
+                    alt={name}
+                />
+                <CardMedia
+                    component="img"
+                    height="140"
+                    image={sprite_back}
+                    alt={name}
+                />
+                <Typography gutterBottom variant='h5' component="div">
+                        PokéID: {id + 1}    
+                </Typography>
+                <Typography gutterBottom variant='h5' component="div">
+                        name: {name}    
+                </Typography>
+                <CardContent>
+                    {getFirstFlavorText() ? (<Typography variant="body2" sx ={{color: 'text.secondary'}}>
+                        {getFirstFlavorText()}</Typography>) : (
+                            <Typography variant="body2" sx ={{color: 'text.secondary'}}>
+                                No english description available
+                            </Typography>
+                    )}
+                </CardContent>
+            </CardActionArea>
+
+        </Card>
+        <Button variant="text"><Link to="/">Back</Link> </Button>
         </>
     )
 }
