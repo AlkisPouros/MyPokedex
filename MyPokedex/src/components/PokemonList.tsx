@@ -7,13 +7,16 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';      
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography'
-import  CardActionArea from '@mui/material/CardActionArea';
-import  CardMedia  from '@mui/material/CardMedia';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardMedia from '@mui/material/CardMedia';
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import NavigateNext from "@mui/icons-material/NavigateNext";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 import { IconButton } from '@mui/material';
+import Grid from '@mui/material/Grid2'
+import FavoriteIcon from '@mui/icons-material/Favorite';
+
 
 const PokemonList = () => {
     const [apiData, setApiData] = React.useState<apiProps | null>(null);
@@ -46,54 +49,68 @@ const PokemonList = () => {
     
   return (
     <>
-      <SearchBar apiData = {SearchAPIData} spriteDataMap={spriteDataMap}/>
+      
 
-      <Box sx = {{width: '100%', maxWidth: 360}}>
+      <Box sx = {{width: '100%', maxWidth: 650}}>
         <nav aria-label="main mailbox folders"></nav>
-
-        <List>
-          {apiData && currentPokemonList.map((info, index) => {
-            const pokemonId = index + counter;  // ID for the Pokémon (page-specific)
-            const sprite = spriteDataMap.get(pokemonId + 1);  // Get the sprite for the current Pokémon from the Map
-            return(
-              <ListItem>
-                {spriteData && (
-                  <Card sx = {{ maxWidth: 800, maxHeight: 345 ,borderRadius: '8%'}}>
-                      <Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: sprite?.front_sprite as string, sprite_back: sprite?.back_sprite as string}}>
-                      
-                        <CardActionArea>
-                          <CardMedia
-                              component="img"
-                              height="150"
-                              width="150"
-                              image={sprite?.front_sprite}
-                              alt={info.name}
-                          />
-                          <Typography variant='body1' component="div">
-                                  PokéID: {pokemonId + 1}    
-                          </Typography>
-                          <Typography variant='body1' component="div">
-                                  {Object.values(info)[0] as string}    
-                          </Typography>
-                        </CardActionArea>
-                      </Link>
-                    
-                    {addedPokemons.has(index)? (
-                      <Typography>Pokémon added</Typography>): (<Button variant="text" onClick={()=>handleAddToFavourites(index + counter, Object.values(info)[0] as string, sprite?.front_sprite as string)}>add</Button>)
-                    }
-                    </Card>
-                  )}
+        <Box sx = {{flexGrow: 1}}>
+          <Grid container spacing={1} sx = {{m: 1.5, justifyContent: 'center'}}>
+              <SearchBar apiData = {SearchAPIData} spriteDataMap={spriteDataMap}/>
+              <IconButton sx = {{p: '5px'}}><Link to={'/Favourites'} state style={{height: 24}}><FavoriteIcon style = {{color: "red" }}/></Link></IconButton>
+          </Grid>
+        </Box>
+        <List sx={{flexGrow: 1, flexWrap: 'wrap' }}>
+          <Grid container spacing={2} >
+              {apiData && currentPokemonList.map((info, index) => {
+                
+                    const pokemonId = index + counter;  // ID for the Pokémon (page-specific)
+                    const sprite = spriteDataMap.get(pokemonId + 1);  // Get the sprite for the current Pokémon from the Map
+                    return(
+                      <Grid size = {{xs: 7, md: 4}}>
+                          <ListItem>
+                            {spriteData && (
+                              <Card sx = {{ alignItems: 'center',borderRadius: '8%', width: '100%'}}>
+                                {addedPokemons.has(pokemonId)? (
+                                  <Box textAlign='right'><FavoriteIcon style = {{color: "red" }}/></Box>): (<Box textAlign='right'><Button variant="text" onClick={()=>handleAddToFavourites(pokemonId, Object.values(info)[0] as string, sprite?.front_sprite as string)}>add</Button></Box>)
+                                }
+                                  <Link to={`/PokeInfo/${index + counter}`} state = {{id: index + counter, name: Object.values(info)[0] as string, sprite: sprite?.front_sprite as string, sprite_back: sprite?.back_sprite as string}}>
+                                    
+                                      <CardActionArea sx={{textAlign: 'center', width: '100%'}}>
+                                        
+                                          <CardMedia
+                                            component='img'
+                                            image={sprite?.front_sprite}
+                                            alt={info.name}
+                                            style={{width: 100, margin: 'auto'}}
+                                          />
+                                        <Box sx={{mb: 2}}>
+                                          <Typography variant='body1' component="div">
+                                                  PokéID: {pokemonId + 1}    
+                                          </Typography>
+                                          <Typography variant='body1' component="div">
+                                                  {Object.values(info)[0] as string}    
+                                          </Typography>
+                                        </Box>
+                                      </CardActionArea>
+                                    
+                                  </Link>
+                                
+                                
+                                </Card>
+                              )}
+                              
+                          </ListItem>
+                        </Grid>)
+                  })}
                   
-              </ListItem>)
-          })}
-        </List>
+              </Grid>
+            </List>
+          
       </Box>
-      <div id = "Under-List Controler"></div>
         <ButtonGroup>
           <IconButton type="button" onClick={getPrevious} sx={{backgroundColor: 'background.paper'}} disabled={counter === 0}><NavigateBefore/></IconButton>
           <IconButton type="button" onClick={getNext} sx={{backgroundColor: 'background.paper'}} disabled={counter + 10 >= (apiData?.results.length || 0)}><NavigateNext/></IconButton>
         </ButtonGroup>
-        <Button><Link to={'/Favourites'} state>Favourites</Link></Button>
       
     </>
   )

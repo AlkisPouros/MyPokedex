@@ -3,32 +3,17 @@ import './App.css'
 import  PokemonList  from './components/PokemonList.tsx'
 import PokeInfo from './components/PokeInfo.tsx'
 import { Route, Routes } from 'react-router-dom';
-import React, { useEffect } from 'react';
 import Favourites from './components/Favourites.tsx';
-
-
+import pokedexLogo from "./assets/pokedex-logo.png"
+import Box from '@mui/material/Box'
 
 function App() {
 
-
-// For testing purposes
-const fetchAPI = async () => {
-  try {
-      const response = await fetch("http://localhost:5000/api");
-      const data = await response.json();
-      console.log(data.fruits as JSON);
-  }catch(error)
-  {
-    console.error("Something went wrong ", error);
-  }
-}
-useEffect(() => {
-  fetchAPI();
-},[])
   return (
     <>
-    
-       <h1>MyPokedex</h1>
+       <Box sx ={{padding: 2}}>
+        <img src = {pokedexLogo} height={80}  alt="Pokedex"/>
+       </Box>
         <Routes>
           <Route path="/" element={<PokemonList/>}/>
           <Route path="/PokeInfo/:id" element={<PokeInfo/>}/>

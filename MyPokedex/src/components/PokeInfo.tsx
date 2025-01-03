@@ -1,19 +1,25 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import { getPokeDescription, speciesData } from '../api/fetchFromPokeAPI';
+import Item from './Item';
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 import  CardActionArea from '@mui/material/CardActionArea';
-import  CardMedia  from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
+import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid2'
+import Carousel from 'react-material-ui-carousel'
 
 const PokeInfo = () => {
 
     const location = useLocation();
     const { id, name, sprite, sprite_back } = location.state || {};
     const [PokespeciesData, setPokeSpeciesData] = React.useState<speciesData | null>(null);
-   
+    const data = [sprite, sprite_back];
+
+
     React.useEffect(() => {
         getPokeDescription(id as number, setPokeSpeciesData);
     }, []);
@@ -33,26 +39,24 @@ const PokeInfo = () => {
     return(
 
         <>
-        <Card sx = {{ maxWidth: 345, borderRadius: '8%' }}>
-            <CardActionArea>
-                <CardMedia
-                    component="img"
-                    height="140"
-                    image={sprite}
-                    alt={name}
-                />
-                <CardMedia
-                    component="img"
-                    height="140"
-                    image={sprite_back}
-                    alt={name}
-                />
-                <Typography gutterBottom variant='h5' component="div">
-                        PokéID: {id + 1}    
-                </Typography>
-                <Typography gutterBottom variant='h5' component="div">
-                        name: {name}    
-                </Typography>
+        <Card sx = {{ width: '50%', borderRadius: '8%', m: 'auto'}}>
+            <CardActionArea sx = {{flexGrow: 1, justifyContent: 'center'}}>
+                <Grid container spacing={4}>
+                    <Grid size = {2}></Grid>
+                       <Carousel>
+                            {
+                                data.map( (item, i) => <Item key={i} item={item as string} /> )
+                            }
+                       </Carousel>
+                    </Grid>
+                <Box sx= {{mt: 1}}>
+                    <Typography gutterBottom variant='h5' component="div">
+                            PokéID: {id + 1}    
+                    </Typography>
+                    <Typography gutterBottom variant='h5' component="div">
+                            {name}    
+                    </Typography>
+                 </Box>
                 <CardContent>
                     {getFirstFlavorText() ? (<Typography variant="body2" sx ={{color: 'text.secondary'}}>
                         {getFirstFlavorText()}</Typography>) : (
@@ -64,7 +68,7 @@ const PokeInfo = () => {
             </CardActionArea>
 
         </Card>
-        <Button variant="text"><Link to="/">Back</Link> </Button>
+        <Button sx = {{m: 2}} variant="text"><Link to="/"><KeyboardBackspaceIcon style={{color: 'blue'}}/></Link> </Button>
         </>
     )
 }
