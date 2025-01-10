@@ -38,7 +38,6 @@ a:hover{
 
 .card:hover {
   transition: background-color 0s ease-out, color 0s ease-out !important; 
-  transition: background-color 0s ease-in, color 0s ease-in !important; 
   color: inherit; /* No text color change on hover */
 }
 
