@@ -39,11 +39,10 @@ const PokeInfo = () => {
     return(
 
         <>
-        <Card sx = {{ width: '50%', borderRadius: '8%', m: 'auto'}}>
+        <Card className = "Info-Card" sx = {{ width: '50%', borderRadius: '8%', m: 'auto', boxShadow: 3}} style={{ backgroundColor: 'transparent' }}>
             <CardActionArea sx = {{flexGrow: 1, justifyContent: 'center'}}>
-                <Grid container spacing={4}>
-                    <Grid size = {2}></Grid>
-                       <Carousel>
+                <Grid container spacing={2}>
+                       <Carousel className = "Info-Carousel" sx = {{width: '100%', m: 'auto'}} navButtonsAlwaysVisible>
                             {
                                 data.map( (item, i) => <Item key={i} item={item as string} /> )
                             }
@@ -57,18 +56,19 @@ const PokeInfo = () => {
                             {name}    
                     </Typography>
                  </Box>
-                <CardContent>
-                    {getFirstFlavorText() ? (<Typography variant="body2" sx ={{color: 'text.secondary'}}>
-                        {getFirstFlavorText()}</Typography>) : (
-                            <Typography variant="body2" sx ={{color: 'text.secondary'}}>
-                                No english description available
-                            </Typography>
-                    )}
+                <CardContent style={{}}>
+                        {getFirstFlavorText() ? (<Typography variant="body2" style = {{textWrap: 'wrap'}} sx ={{wordBreak: "break-word",color: 'text.secondary'}}>
+                            {getFirstFlavorText()}</Typography>) : (
+                                <Typography variant="body2" sx ={{color: 'text.secondary'}}>
+                                    No english description available
+                                </Typography>
+                        )}
+                    
                 </CardContent>
             </CardActionArea>
 
         </Card>
-        <Button sx = {{m: 2}} variant="text"><Link to="/"><KeyboardBackspaceIcon style={{color: 'blue'}}/></Link> </Button>
+        <Button sx = {{m: 2}} variant="text"><Link to="/"><KeyboardBackspaceIcon style={{color: 'black'}}/></Link> </Button>
         </>
     )
 }

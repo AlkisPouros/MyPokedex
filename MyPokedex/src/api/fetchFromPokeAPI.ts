@@ -76,7 +76,7 @@ export const fetchDataFromApi = async (number: number, setApiData: React.Dispatc
           console.log(PokeData);
           apiData?.results.map((info, index) => (
             console.log(index + counter, info.name)))
-
+            
           
           
         }
@@ -88,7 +88,7 @@ export const fetchDataFromApi = async (number: number, setApiData: React.Dispatc
         
       }
 
-export const addToFavourites = async (number : number, name : string, sprite: string, setAddedPokemon: React.Dispatch<React.SetStateAction<Set<number>>>) => { 
+export const addToFavourites = async (number : number, name : string, sprite: string) => { 
     const response = await fetch(server_api_link, {
           method: 'POST',
           headers: {
@@ -103,7 +103,6 @@ export const addToFavourites = async (number : number, name : string, sprite: st
         if(response.ok)
         {
           console.log("Pokemon added");
-          setAddedPokemon(previous => new Set(previous).add(number));
         }
         else{
           console.error("Pokemon hasnt been added");

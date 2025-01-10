@@ -1,4 +1,3 @@
-import React from 'react';
 import { Paper, CardMedia } from '@mui/material'
 
 type ItemProps = {
@@ -7,15 +6,18 @@ type ItemProps = {
 }
 
 
-const Item = ({key : number, item: string} : ItemProps)  => 
+const Item = ({item} : ItemProps)  => 
 {
     return(
-        <Paper>
-            <CardMedia
-                component='img'
-                image = {item}
-            />
-        </Paper>
+        <>
+            <Paper sx = {{boxShadow: 0}}>
+                <CardMedia
+                    component='img'
+                    image = {item}
+                    sx = {{width: 150, justifySelf: 'center', boxShadow: 0}}
+                />
+            </Paper>
+        </>
     )
 }
 

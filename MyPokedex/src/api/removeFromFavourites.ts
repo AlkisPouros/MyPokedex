@@ -4,6 +4,12 @@ import { server_api_link } from "./PokeApiLinks";
 
 export const removeFromFavourites = async (number: number, setFavePokemon: React.Dispatch<React.SetStateAction<pokemon[] | null>>)=>
     {
+        // Remove from localStorage immediately
+        let updatedFavourites = JSON.parse(localStorage.getItem('favouritePokemons') || '[]');
+        updatedFavourites = updatedFavourites.filter((id: number) => id !== number);
+
+        // Update localStorage with the new list
+        localStorage.setItem('favouritePokemons', JSON.stringify(updatedFavourites));
          // Optimistically remove the Pokémon from the local state immediately
         setFavePokemon((prevFavourites) => 
         prevFavourites ? prevFavourites.filter(pokemon => pokemon.id !== number) : []

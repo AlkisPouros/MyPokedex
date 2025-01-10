@@ -7,7 +7,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { IconButton, InputBase } from '@mui/material';
 
 
-
 type SearchBarProps = {
     apiData: apiProps | null;   
     spriteDataMap: Map<number, spriteProps>;
