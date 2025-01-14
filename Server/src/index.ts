@@ -45,10 +45,11 @@ app.post('/api/favourites', (req :Request, res: Response) => {
       favourites.push(newFavourite);
       // Write the updated favourites list to the file
       writeFavouritesToFile(favourites);
-      res.status(201).json(newFavourite);
+      res.status(204).json(newFavourite);
     }
   }catch(error)
   {
+    res.status(501).send("Server Error")
     console.error("Error" , error);
   }
 })
@@ -56,9 +57,10 @@ app.post('/api/favourites', (req :Request, res: Response) => {
 app.get('/api/favourites', (req: Request, res: Response)=> {
   try{
     const favourites = readFavouritesFromFile();
-    res.status(201).json(favourites);
+    res.status(200).json(favourites);
   }catch(error)
   {
+    res.status(501).send("Server Error");
     console.log("Error", error);
   }
 })
@@ -74,10 +76,12 @@ app.delete('/api/favourites', (req: Request, res: Response)=> {
     {
        // If it has changed, write the updated list to the file
        writeFavouritesToFile(updatedFavourites);
+       res.status(200).send("Pokemon deleted successfully");
     }
   }
   catch(error)
   {
+    res.status(501).send("Server error")
     console.error("Error ", error)
   }
 })

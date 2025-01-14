@@ -19,38 +19,36 @@ export interface speciesData{
 
 //Fetching from PokeAPI the pokemon sprites
 export const getPokemonSprites = async (num: number, setspriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap: React.Dispatch<React.SetStateAction<Map<number, spriteProps>>> ) => {
-        try{
+    try{
           
           
-            const response =  await fetch(`${apilink}/${num}`);
-            const pokemonSprite = await response.json();
+          const response =  await fetch(`${apilink}/${num}`);
+          const pokemonSprite = await response.json();
 
-            
+          // For testing purposes
+          const PokemonSprites = {
+            front_sprite: pokemonSprite["sprites"]["front_default"] as string,
+            back_sprite: pokemonSprite["sprites"]["back_default"] as string,
+          }
+            // Update the map with the sprite data
+          spriteDataMap.set(num, PokemonSprites);
 
-            // For testing purposes
-            const PokemonSprites = {
-              front_sprite: pokemonSprite["sprites"]["front_default"] as string,
-              back_sprite: pokemonSprite["sprites"]["back_default"] as string,
-            }
-             // Update the map with the sprite data
-            spriteDataMap.set(num, PokemonSprites);
+          // Update the state (force re-render if needed)
+          setSpriteDataMap(new Map(spriteDataMap));
 
-            // Update the state (force re-render if needed)
-            setSpriteDataMap(new Map(spriteDataMap));
-
-            setspriteData(PokemonSprites); 
-            console.log(pokemonSprite["sprites"]["front_default"]);
-            console.log(pokemonSprite["sprites"]["back_default"] as string);
-            setspriteData(PokemonSprites);
-            
-        }
-        catch(error)
-        {
-          console.error("something went wrong " + error);
-        }
+          setspriteData(PokemonSprites); 
+          console.log(pokemonSprite["sprites"]["front_default"]);
+          console.log(pokemonSprite["sprites"]["back_default"] as string);
+          setspriteData(PokemonSprites);
+          
       }
+      catch(error)
+      {
+        console.error("something went wrong " + error);
+      }
+  }
 //Fetching from PokeAPI the pokemon info 
-export const fetchDataFromApi = async (number: number, setApiData: React.Dispatch<React.SetStateAction<apiProps | null>>, apiData: apiProps | null, counter: number, setSpriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap : React.Dispatch<React.SetStateAction<Map<number, spriteProps>>>) => {
+export const fetchDataFromApi = async (number: number, setApiData: React.Dispatch<React.SetStateAction<apiProps | null>>, apiData: apiProps | null, counter: number, setSpriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap : React.Dispatch<React.SetStateAction<Map<number, spriteProps>>>, pokeNameDataMap: Map<number, string>, setPokeNameDataMap: React.Dispatch<React.SetStateAction<Map<number, string>>>) => {
         try {
           const response = await fetch(apilink + `?offset=${number}&limit=${counter}`)
           const PokeData = await response.json();
@@ -75,39 +73,36 @@ export const fetchDataFromApi = async (number: number, setApiData: React.Dispatc
           console.log(apiData);
           console.log(PokeData);
           apiData?.results.map((info, index) => (
-            console.log(index + counter, info.name)))
-            
-          
+            pokeNameDataMap.set(index + 1, Object.values(info)[0] as string)))
           
         }
         catch (error)
         {
           console.error("Something went wrong", error);
         }
-        
+        setPokeNameDataMap(pokeNameDataMap);
         
       }
 
 export const addToFavourites = async (number : number, name : string, sprite: string) => { 
-    const response = await fetch(server_api_link, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: number,
-            name: name,
-            sprite: sprite,
-          }),
-        });
-        if(response.ok)
-        {
-          console.log("Pokemon added");
-        }
-        else{
-          console.error("Pokemon hasnt been added");
-        }
-      }
+  try {
+      const response = await fetch(server_api_link, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: number,
+              name: name,
+              sprite: sprite,
+            }),
+          });
+    }catch(error)
+    {
+      alert("Server is down " + error)
+    }
+    
+ }
 
 //Fetching from PokeAPI the pokemon description 
 export const getPokeDescription = async (num : number, setPokeSpeciesData: React.Dispatch<React.SetStateAction<speciesData | null>>) => {
@@ -121,6 +116,6 @@ export const getPokeDescription = async (num : number, setPokeSpeciesData: React
       }
       catch(error)
       {
-        console.error("Something went wrong error "+ error);
+        alert("Something went wrong error "+ error);
       }
 }

@@ -42,7 +42,6 @@ export const isAvailable = () => {
     const request = fetch(server_api_link);
     return Promise
         .race([timeout, request])
-        .then(response => console.log('Here is your favourite pokemon list'))
-        .catch(error => alert('Error 505, Server down'));
+        .catch(error => alert(error));
 }
 

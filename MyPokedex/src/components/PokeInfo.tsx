@@ -5,7 +5,6 @@ import Item from './Item';
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
-import  CardActionArea from '@mui/material/CardActionArea';
 import Button from '@mui/material/Button';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
 import Box from '@mui/material/Box'
@@ -31,44 +30,44 @@ const PokeInfo = () => {
         const firstEntry = PokespeciesData.flavor_text_entries.find(
             (entry) => entry.language.name === 'en'
         );
-            return firstEntry?.flavor_text;
+            return firstEntry?.flavor_text.replace(/\f/g," ");
         }
-            return null;
+            return null; 
         };
 
     return(
 
         <>
-        <Card className = "Info-Card" sx = {{ width: '50%', borderRadius: '8%', m: 'auto', boxShadow: 3}} style={{ backgroundColor: 'transparent' }}>
-            <CardActionArea sx = {{flexGrow: 1, justifyContent: 'center'}}>
-                <Grid container spacing={2}>
-                       <Carousel className = "Info-Carousel" sx = {{width: '100%', m: 'auto'}} navButtonsAlwaysVisible>
-                            {
-                                data.map( (item, i) => <Item key={i} item={item as string} /> )
-                            }
-                       </Carousel>
-                    </Grid>
-                <Box sx= {{mt: 1}}>
-                    <Typography gutterBottom variant='h5' component="div">
-                            PokéID: {id + 1}    
-                    </Typography>
-                    <Typography gutterBottom variant='h5' component="div">
-                            {name}    
-                    </Typography>
-                 </Box>
-                <CardContent style={{}}>
-                        {getFirstFlavorText() ? (<Typography variant="body2" style = {{textWrap: 'wrap'}} sx ={{wordBreak: "break-word",color: 'text.secondary'}}>
-                            {getFirstFlavorText()}</Typography>) : (
-                                <Typography variant="body2" sx ={{color: 'text.secondary'}}>
-                                    No english description available
-                                </Typography>
-                        )}
-                    
-                </CardContent>
-            </CardActionArea>
+            {}
+                <Card className = "Info-Card" sx = {{ width: '50%', borderRadius: '8%', m: 'auto', boxShadow: 3,}}>
+                    <Box sx = {{flexGrow: 1, justifyContent: 'center',}}>
+                        <Grid container spacing={2}>
+                            <Carousel className = "Info-Carousel" sx = {{width: '100%', m: 'auto'}} navButtonsAlwaysVisible>
+                                    {
+                                        data.map( (item, i) => <Item key={i} item={item as string} /> )
+                                    }
+                            </Carousel>
+                            </Grid>
+                        <Box sx= {{mt: 1}}>
+                            <Typography className='Info-Text' gutterBottom variant='h5' component="div">
+                                    PokéID: {id as number}    
+                            </Typography>
+                            <Typography className='Info-Text' gutterBottom variant='h5' component="div">
+                                    {name.toUpperCase()}    
+                            </Typography>
+                        </Box>
+                        <CardContent className='Card-Content'>
+                                {getFirstFlavorText() ? (<Typography variant="body2" style = {{textWrap: 'wrap'}} sx ={{wordBreak: "break-word",color: 'text.secondary'}}>
+                                    {getFirstFlavorText()}</Typography>) : (
+                                        <Typography variant="body2" sx ={{color: 'text.secondary'}}>
+                                            No english description available
+                                        </Typography>
+                                )}
+                        </CardContent>
+                    </Box>
 
-        </Card>
-        <Button sx = {{m: 2}} variant="text"><Link to="/"><KeyboardBackspaceIcon style={{color: 'black'}}/></Link> </Button>
+                </Card>
+                <Button className='Routing-button' sx = {{m: 2, backgroundColor: 'black'}} variant="text"><Link style = {{height: 24}} to="/"><KeyboardBackspaceIcon style={{color: 'white'}}/></Link> </Button>
         </>
     )
 }
