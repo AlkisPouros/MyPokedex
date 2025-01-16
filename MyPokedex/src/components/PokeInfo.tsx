@@ -10,18 +10,33 @@ import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid2'
 import Carousel from 'react-material-ui-carousel'
+import toast from 'react-hot-toast'
+
 
 const PokeInfo = () => {
 
     const location = useLocation();
     const { id, name, sprite, sprite_back } = location.state || {};
     const [PokespeciesData, setPokeSpeciesData] = React.useState<speciesData | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
     const data = [sprite, sprite_back];
 
-
+    const fetchText = React.useCallback(async ()=> {
+        const toastId = toast.loading('Fetching Pokémon details...');
+        try {
+            await getPokeDescription(id as number, setPokeSpeciesData);
+        } catch (error) {
+            toast.error('Failed to fetch Pokémon details.', { id: toastId });
+        } finally {
+            toast.dismiss(toastId); 
+            setIsLoading(false); 
+        }
+    },[id])
+    
     React.useEffect(() => {
-        getPokeDescription(id as number, setPokeSpeciesData);
-    }, []);
+        if(id)
+            fetchText();
+    }, [id,fetchText]);
     
     // Retrieving the first flavor text in English
     const getFirstFlavorText = () => {
@@ -30,7 +45,7 @@ const PokeInfo = () => {
         const firstEntry = PokespeciesData.flavor_text_entries.find(
             (entry) => entry.language.name === 'en'
         );
-            return firstEntry?.flavor_text.replace(/\f/g," ");
+            return firstEntry?.flavor_text.replace(/\f/g," ").trim();
         }
             return null; 
         };
@@ -38,7 +53,7 @@ const PokeInfo = () => {
     return(
 
         <>
-            {}
+            {getFirstFlavorText()? (<>
                 <Card className = "Info-Card" sx = {{ width: '50%', borderRadius: '8%', m: 'auto', boxShadow: 3,}}>
                     <Box sx = {{flexGrow: 1, justifyContent: 'center',}}>
                         <Grid container spacing={2}>
@@ -58,7 +73,7 @@ const PokeInfo = () => {
                         </Box>
                         <CardContent className='Card-Content'>
                                 {getFirstFlavorText() ? (<Typography variant="body2" style = {{textWrap: 'wrap'}} sx ={{wordBreak: "break-word",color: 'text.secondary'}}>
-                                    {getFirstFlavorText()}</Typography>) : (
+                                    {getFirstFlavorText()?.trim()}</Typography>) : (
                                         <Typography variant="body2" sx ={{color: 'text.secondary'}}>
                                             No english description available
                                         </Typography>
@@ -67,7 +82,11 @@ const PokeInfo = () => {
                     </Box>
 
                 </Card>
-                <Button className='Routing-button' sx = {{m: 2, backgroundColor: 'black'}} variant="text"><Link style = {{height: 24}} to="/"><KeyboardBackspaceIcon style={{color: 'white'}}/></Link> </Button>
+            <Button className='Routing-button' sx = {{m: 2, backgroundColor: 'black'}} variant="text"><Link style = {{height: 24}} to="/"><KeyboardBackspaceIcon style={{color: 'white'}}/></Link> </Button> </>):(<Box>{/**toast.loading('loading...')*/}</Box>)}
+                                
+            
+            
+               
         </>
     )
 }

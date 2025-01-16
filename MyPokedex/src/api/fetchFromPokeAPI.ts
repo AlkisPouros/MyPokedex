@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { apilink, server_api_link, api_desc_link } from "./PokeApiLinks";
 
 // Define the structure of a single Pokémon
@@ -16,9 +17,9 @@ export interface spriteProps {
 export interface speciesData{
   flavor_text_entries: { language: { name: string }; flavor_text: string }[];
 }
-
+// HERE IS THE CORE OF THE PROBLEM!!!
 //Fetching from PokeAPI the pokemon sprites
-export const getPokemonSprites = async (num: number, setspriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap: React.Dispatch<React.SetStateAction<Map<number, spriteProps>>> ) => {
+export const getPokemonSprite = async (num: number, setspriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap: React.Dispatch<React.SetStateAction<Map<number, spriteProps>>> ) => {
     try{
           
           
@@ -36,7 +37,6 @@ export const getPokemonSprites = async (num: number, setspriteData: React.Dispat
           // Update the state (force re-render if needed)
           setSpriteDataMap(new Map(spriteDataMap));
 
-          setspriteData(PokemonSprites); 
           console.log(pokemonSprite["sprites"]["front_default"]);
           console.log(pokemonSprite["sprites"]["back_default"] as string);
           setspriteData(PokemonSprites);
@@ -44,47 +44,44 @@ export const getPokemonSprites = async (num: number, setspriteData: React.Dispat
       }
       catch(error)
       {
-        console.error("something went wrong " + error);
+        toast.error(error + " something went wrong");
       }
   }
 //Fetching from PokeAPI the pokemon info 
-export const fetchDataFromApi = async (number: number, setApiData: React.Dispatch<React.SetStateAction<apiProps | null>>, apiData: apiProps | null, counter: number, setSpriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap : React.Dispatch<React.SetStateAction<Map<number, spriteProps>>>, pokeNameDataMap: Map<number, string>, setPokeNameDataMap: React.Dispatch<React.SetStateAction<Map<number, string>>>) => {
+export const fetchDataFromApi = async (number: number, setApiData: React.Dispatch<React.SetStateAction<apiProps | null>>, apiData: apiProps | null, counter: number, setSpriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap : React.Dispatch<React.SetStateAction<Map<number, spriteProps>>>) => {
         try {
+          if(apiData) return;
           const response = await fetch(apilink + `?offset=${number}&limit=${counter}`)
           const PokeData = await response.json();
           
           // Loop through each Pokémon and extract the ID from the URL
+          
           PokeData.results.forEach((pokemon: Pokemon) => {
           // Extract the ID from the URL (assuming it's always the 6th part of the URL)
           const urlParts = pokemon.url.split('/');
           const pokemonId = parseInt(urlParts[6]);  // The ID is always at index 6
 
           // Call getPokemonSprites to fetch the sprite data for this Pokémon
-          getPokemonSprites(pokemonId, setSpriteData, spriteDataMap, setSpriteDataMap);
+          getPokemonSprite(pokemonId, setSpriteData, spriteDataMap, setSpriteDataMap);
         });          
-
-
           // For testing purposes
           const pokemon = {
            results : PokeData?.results,
-          };  
+        };  
          
           setApiData(pokemon);
           console.log(apiData);
           console.log(PokeData);
-          apiData?.results.map((info, index) => (
-            pokeNameDataMap.set(index + 1, Object.values(info)[0] as string)))
-          
         }
         catch (error)
         {
-          console.error("Something went wrong", error);
+          toast.error(error + " Something went wrong");
         }
-        setPokeNameDataMap(pokeNameDataMap);
+       
         
       }
 
-export const addToFavourites = async (number : number, name : string, sprite: string) => { 
+export const addToFavourites = async (number : number, name : string, sprite: string, setAddedPokemon:  React.Dispatch<React.SetStateAction<number[]>>) => { 
   try {
       const response = await fetch(server_api_link, {
             method: 'POST',
@@ -97,9 +94,19 @@ export const addToFavourites = async (number : number, name : string, sprite: st
               sprite: sprite,
             }),
           });
+          if(response.ok)
+            toast.success(response.status + " Pokemon Added")
+          else
+          {
+             toast.error(response.status + " Pokemon not added");
+             setAddedPokemon((prev) => prev.filter((id) => id !== number));
+          }
+           
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     }catch(error)
     {
-      alert("Server is down " + error)
+      toast.error("503 Server is down");
+      setAddedPokemon((prev) => prev.filter((id) => id !== number));
     }
     
  }
@@ -112,10 +119,11 @@ export const getPokeDescription = async (num : number, setPokeSpeciesData: React
         const pokeDesc = await response.json();
         console.log(pokeDesc);
         setPokeSpeciesData(pokeDesc);
-        
+        if(!response.ok)
+          toast.error(response.status + " server error")
       }
       catch(error)
       {
-        alert("Something went wrong error "+ error);
+        toast.error(error+ " Something went wrong");
       }
 }

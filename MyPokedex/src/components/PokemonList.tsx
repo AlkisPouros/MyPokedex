@@ -16,9 +16,12 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PaginationOutlined from './PaginationOutlined';
 import { askServerForFavePomemon } from '../api/fetchFromAPI';
+import toast from 'react-hot-toast';
 import '../index.css'
 
+
 const PokemonList = () => {
+  
     const [apiData, setApiData] = React.useState<apiProps | null>(null);
     const [spriteData, setspriteData] = React.useState<spriteProps | null>(null);
     const [counter, setCounter] = React.useState<number>(0);
@@ -26,36 +29,41 @@ const PokemonList = () => {
     const SearchAPIData = apiData || {results: []};
     const [spriteDataMap, setSpriteDataMap] = React.useState<Map<number, spriteProps>>(new Map());  
     const [ filteredPokemon, setFilteredPokemon ] = React.useState<Pokemon[]>([]);
-    const [ pokeNameDataMap, setPokeNameDataMap ] = React.useState<Map<number,string>>(new Map());
     const [filterOffset, setFilterOffset] = React.useState<number>(0);
+    //const [ isLoading, setLoading ] = React.useState<boolean>(true);
+
+
+    const initializeData = React.useCallback(async () => {
+    
+      await fetchDataFromApi(0, setApiData, apiData, 151, setspriteData, spriteDataMap, setSpriteDataMap);
+      
+    },[apiData, spriteDataMap]);
 
     React.useEffect(() => {
-      const fetchData = async () => {
-        try {
-          await fetchDataFromApi(0, setApiData, apiData, 151, setspriteData, spriteDataMap, setSpriteDataMap, pokeNameDataMap, setPokeNameDataMap);
-        }catch(error)
-        {
-          console.log("error",error);
-
-        }
-   
-     }
-      const fetchFavorites = async () => {
-        try {
-            await askServerForFavePomemon(setAddedPokemon); 
-            console.log("Favorites loaded successfully"); 
-        } catch (error) {
-            console.error("Failed to fetch favorites", error);
-        }
-        
-    };
-      fetchData();
-      fetchFavorites(); // Call the async function
-    }, [])
     
-  
+      if(!apiData)
+        initializeData();
+      
+    }, [apiData, initializeData, spriteDataMap])
+    
+    const fetchFavorites = async () => {
+        
+      try {
+          await askServerForFavePomemon(setAddedPokemon); 
+      } catch (error) {
+          toast.error(error+" Failed to fetch favorites");
+      }
+      
+    };
+
+    React.useEffect(()=> {
+      if(apiData)
+        fetchFavorites();
+    },[apiData]);
+   
+
     console.log(counter);
-    console.log(filterOffset)
+    console.log(filterOffset);
     
 
   const handleDataFromSearchBar = (searchBarData: (Pokemon & { id: number; name?: string ;sprite?: spriteProps })[]) => {
@@ -65,35 +73,36 @@ const PokemonList = () => {
     };
 
     console.log(filteredPokemon);
-    const handleAddToFavourites = (pokemonId: number, name: string, sprite: string, ) => {
-      addToFavourites(pokemonId, name, sprite)
+    const handleAddToFavourites = (pokemonId: number, name: string, sprite: string) => {
+      addToFavourites(pokemonId, name, sprite,setAddedPokemon)
+  
+        
+        // Optimistically update the state
+        setAddedPokemon((prev) => {
+          // Check if Pokémon is already in the favorites
+          if (prev.includes(pokemonId)) {
+              // Remove it if it exists
+              return prev.filter((id) => id !== pokemonId);
+          } else {
+              // Add it if it doesn't exist
+              return [...prev, pokemonId];
+          }
+      });
     
-      // Optimistically update the state
-      setAddedPokemon((prev) => {
-        // Check if Pokémon is already in the favorites
-        if (prev.includes(pokemonId)) {
-            // Remove it if it exists
-            return prev.filter((id) => id !== pokemonId);
-        } else {
-            // Add it if it doesn't exist
-            return [...prev, pokemonId];
-        }
-    });
-      
+
   };
     
   return (
     <>
       
-
       <Box sx = {{width: '100%', maxWidth: 650}}>
         <nav aria-label="main mailbox folders"></nav>
         <Box sx = {{flexGrow: 1}}>
           <Grid container spacing={1} sx = {{m: 1.5, justifyContent: 'center'}}>
-              <SearchBar  apiData = {SearchAPIData} spriteDataMap={spriteDataMap} onPokemonData={handleDataFromSearchBar} pokeNameDataMap={pokeNameDataMap}/>
+              <SearchBar apiData = {SearchAPIData} spriteDataMap={spriteDataMap} onPokemonData={handleDataFromSearchBar}/>
               {(addedPokemon.length !== 0) ? (
                 <IconButton className='no-hover' sx = {{borderRadius: '5px', backgroundColor: 'black', p: '5px'}}><Link to={'/Favourites'} style={{height: 24}}><FavoriteIcon style = {{color: "red" }}/></Link></IconButton>
-                ) : (<IconButton className='no-hover' sx = {{borderRadius: '5px', p: '5px', backgroundColor: 'black'}}><Link to={'/Favourites'} state style={{height: 24}}><FavoriteIcon style={{color: "white"}} /></Link></IconButton>)
+                ) : (<IconButton className='no-hover' sx = {{borderRadius: '5px', p: '5px', backgroundColor: 'black'}}><FavoriteIcon style={{color: "white"}} /></IconButton>)
               } 
           </Grid>
         </Box>
@@ -114,7 +123,7 @@ const PokemonList = () => {
                             : parseInt(info.url.split("/")[6],10);
 
                           const sprite = spriteDataMap.get(pokemonId);
-                          const pokeName = pokeNameDataMap.get(pokemonId);
+                          const pokeName = info.name;
                           
                             return (
                               <Grid key={pokemonId} size={{ xs: 6, sm: 4, md: 4 }}>

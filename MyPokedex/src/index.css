@@ -4,7 +4,9 @@
   font-weight: 400;
   color: rgba(255, 255, 255, 0.87);
   background-image: url("./assets/Pokemon-background.jpg");
-  background-size: auto;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

@@ -1,4 +1,5 @@
 
+import toast from "react-hot-toast";
 import { pokemon } from "./fetchFromAPI";
 import { server_api_link } from "./PokeApiLinks";
 
@@ -25,16 +26,15 @@ export const removeFromFavourites = async (number: number, setFavePokemon: React
                 })
             })
             if(response.ok)
-            {
-                console.log("pokemon removed");
-            }
-            else {
-
-                console.error("Pokemon isnt removed");
-            }
+            
+                toast.success(response.status+" pokemon removed");
+            
+            else 
+                toast.error(response.status+ " Pokemon isnt removed");
+            
         }catch(error)
         {
-            console.log("Something went wrong", error)
+            toast.error(error+" Something went wrong")
         }
 
     }
