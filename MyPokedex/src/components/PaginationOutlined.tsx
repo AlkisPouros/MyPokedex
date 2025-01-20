@@ -23,10 +23,34 @@ export default function PaginationOutlined({maxValue,setCounter,FilteredPokemonA
 
 
     return(
-        <Stack spacing={2} sx={{alignItems: 'center'}}>
+        <Stack spacing={2} sx={{alignItems: 'center', width: '100%', mt: 2}}>
             
-            <Pagination count={Math.ceil((FilteredPokemonArraymaxLength > 0 ? FilteredPokemonArraymaxLength : maxValue || 0) / 12)} page ={page} variant='outlined' shape='rounded' onChange={handleChange} disabled={isPaginationDisabled} renderItem={(item)=> (
-                <PaginationItem sx={{backgroundColor: 'black', color:'white' }} {...item} />
+            <Pagination count={Math.ceil((FilteredPokemonArraymaxLength > 0 ? FilteredPokemonArraymaxLength : maxValue || 0) / 12)} page ={page} variant='outlined' shape='rounded' onChange={handleChange} disabled={isPaginationDisabled} sx={{ '& .MuiPaginationItem-root': {
+        backgroundColor: 'black', 
+        color: 'white',
+        fontSize: '0.9rem', 
+        minWidth: '36px', 
+        minHeight: '36px', 
+        padding: '6px', 
+        '@media (max-width: 500px)': { 
+          fontSize: '0.75rem',
+          minWidth: '30px',
+          minHeight: '30px',
+        },
+        '@media (max-width:400px)': {
+            fontSize: '0.65rem',
+            maxwidth: '10px',
+            maxHeight: '10px',
+        },
+      },
+      '& .MuiPaginationItem-root:hover': {
+        backgroundColor: 'gray', 
+      },
+      '& .Mui-selected': {
+        backgroundColor: 'white', 
+        color: 'black',
+      },}} renderItem={(item)=> (
+                <PaginationItem sx={{backgroundColor: 'black', color:'white'}} {...item} />
                 
             )}/>
         

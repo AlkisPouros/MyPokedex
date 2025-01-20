@@ -14,7 +14,7 @@ export const fetchFromAPI = async (setFavePokemon: React.Dispatch<React.SetState
         setFavePokemon(data);
         if(!response.ok)
         {
-            toast.error(response.status + "Pokemon have no been fetched");
+            toast.error(response.status + "Pokemon have not been fetched");
         }
     }
     catch(error) 

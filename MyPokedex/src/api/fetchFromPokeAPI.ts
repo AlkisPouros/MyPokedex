@@ -17,7 +17,7 @@ export interface spriteProps {
 export interface speciesData{
   flavor_text_entries: { language: { name: string }; flavor_text: string }[];
 }
-// HERE IS THE CORE OF THE PROBLEM!!!
+
 //Fetching from PokeAPI the pokemon sprites
 export const getPokemonSprite = async (num: number, setspriteData: React.Dispatch<React.SetStateAction<spriteProps | null>>, spriteDataMap: Map<number, spriteProps>, setSpriteDataMap: React.Dispatch<React.SetStateAction<Map<number, spriteProps>>> ) => {
     try{
@@ -112,15 +112,19 @@ export const addToFavourites = async (number : number, name : string, sprite: st
  }
 
 //Fetching from PokeAPI the pokemon description 
-export const getPokeDescription = async (num : number, setPokeSpeciesData: React.Dispatch<React.SetStateAction<speciesData | null>>) => {
-      
+export const getPokeDescription = async (num : number) => {
+    
       try {
-        const response = await fetch(`${api_desc_link}/${num + 1}/`);
-        const pokeDesc = await response.json();
-        console.log(pokeDesc);
-        setPokeSpeciesData(pokeDesc);
-        if(!response.ok)
-          toast.error(response.status + " server error")
+          const response = await fetch(`${api_desc_link}/${num + 1}/`);
+          const pokeDesc = await response.json();
+          console.log(pokeDesc);
+        
+        if(!response.ok){toast.error(response.status + " server error")
+          return; 
+        }
+        return pokeDesc;
+          
+       
       }
       catch(error)
       {

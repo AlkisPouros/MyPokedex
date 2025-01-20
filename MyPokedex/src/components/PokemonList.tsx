@@ -30,8 +30,7 @@ const PokemonList = () => {
     const [spriteDataMap, setSpriteDataMap] = React.useState<Map<number, spriteProps>>(new Map());  
     const [ filteredPokemon, setFilteredPokemon ] = React.useState<Pokemon[]>([]);
     const [filterOffset, setFilterOffset] = React.useState<number>(0);
-    //const [ isLoading, setLoading ] = React.useState<boolean>(true);
-
+  
 
     const initializeData = React.useCallback(async () => {
     
@@ -101,8 +100,8 @@ const PokemonList = () => {
           <Grid container spacing={1} sx = {{m: 1.5, justifyContent: 'center'}}>
               <SearchBar apiData = {SearchAPIData} spriteDataMap={spriteDataMap} onPokemonData={handleDataFromSearchBar}/>
               {(addedPokemon.length !== 0) ? (
-                <IconButton className='no-hover' sx = {{borderRadius: '5px', backgroundColor: 'black', p: '5px'}}><Link to={'/Favourites'} style={{height: 24}}><FavoriteIcon style = {{color: "red" }}/></Link></IconButton>
-                ) : (<IconButton className='no-hover' sx = {{borderRadius: '5px', p: '5px', backgroundColor: 'black'}}><FavoriteIcon style={{color: "white"}} /></IconButton>)
+                <IconButton className='no-hover' sx = {{borderRadius: '5px', backgroundColor: 'black', p: '5px',}}><Link to={'/Favourites'} style={{height: 24}}><FavoriteIcon  style = {{color: "red" }}/></Link></IconButton>
+                ) : (<IconButton className='no-hover' sx = {{borderRadius: '5px', p: '5px', backgroundColor: 'black'}}><FavoriteIcon style={{color: "white"}}  /></IconButton>)
               } 
           </Grid>
         </Box>
@@ -116,7 +115,7 @@ const PokemonList = () => {
                       height: '100%'}} size={{xs: 5}}>
                       
                       {(apiData?.results && filteredPokemon.length > 0 ? filteredPokemon : apiData?.results || [])
-                        .slice(counter, counter + 12) // Use `counter` for both cases
+                        .slice(counter, counter + 12) 
                         .map((info, index) => {
                           const pokemonId = filteredPokemon.length > 0 
                             ? parseInt(filteredPokemon[counter + index].url.split("/")[6],10) 
@@ -138,12 +137,12 @@ const PokemonList = () => {
                                         </Box>
                                       ) : (
                                         <Box textAlign='right'>
-                                          <Button variant="text" onClick={() => handleAddToFavourites(
+                                          <Button sx ={{textAlign: 'right'}} variant="text" onClick={() => handleAddToFavourites(
                                             pokemonId,
                                             pokeName || '',
                                             sprite?.front_sprite || ''
                                           )}>
-                                            <FavoriteBorderIcon style={{ color: "black" }} />
+                                            <FavoriteBorderIcon sx ={{'@media (max-width:400px)': {fontSize: '130%'}}} style={{ color: "black" }} />
                                           </Button>
                                         </Box>
                                       )}
@@ -162,13 +161,13 @@ const PokemonList = () => {
                                             component='img'
                                             image={sprite?.front_sprite}
                                             alt={info.name}
-                                            style={{ width: 100, margin: 'auto' }}
-                                          />
+                                            style={{ width: '70%', margin: 'auto' }}
+                                             />
                                           <Box sx={{ mb: 2 }}>
-                                            <Typography variant='body1' component="div" className="card-text">
+                                            <Typography sx={{'@media (max-width:400px)': {fontSize: '0.75rem'}}} variant='body1' component="div" className="card-text">
                                               PokéID: {pokemonId}
                                             </Typography>
-                                            <Typography variant='body1' component="div" className="card-text">
+                                            <Typography sx={{'@media (max-width:400px)': {fontSize: '0.80rem'}}} variant='body1' component="div" className="card-text">
                                               {pokeName?.toUpperCase()}
                                             </Typography>
                                           </Box>
@@ -185,7 +184,7 @@ const PokemonList = () => {
             </List>
           
       </Box>
-        <Box sx={{alignItems: 'center',width: '100%'}}>
+        <Box sx={{alignItems: 'center',width: '100%', justifyContent: 'center', display: 'flex', flexWrap: 'wrap'}}>
           <PaginationOutlined maxValue={apiData?.results.length} setCounter={setCounter} FilteredPokemonArraymaxLength={filteredPokemon.length}/>
         </Box>
       
