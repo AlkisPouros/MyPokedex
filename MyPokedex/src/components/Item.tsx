@@ -1,10 +1,14 @@
 import { Paper, CardMedia } from '@mui/material'
 
+
+
 type ItemProps = {
     item: string,
     key: number,
 }
 
+// This is the Item component used for the carousel container-component 
+// The props passed are a key a unique image indetifier for the mapping inside the carousel and the string is the image url
 
 const Item = ({item} : ItemProps)  => 
 {
