@@ -6,8 +6,18 @@ import pokedexLogo from "./assets/pokedex-logo.png";
 import Box from "@mui/material/Box";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
+import { useEffect } from "react";
+
+const preloadImage = (url: string) => {
+  const img = new Image();
+  img.src = url;
+};
 
 function App() {
+  useEffect(() => {
+    preloadImage(pokedexLogo);
+  }, []);
+
   return (
     <>
       <Box

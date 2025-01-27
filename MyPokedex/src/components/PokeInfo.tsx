@@ -20,13 +20,25 @@ import {
  * Here after navigating from pokemonList either by clicking on the pokemon card or by searching and clickin the search icon
  * A simple card where there are details for the pokemon, like more sprites aligned inside a carousel, types as well as, a text in english language (for now) describing it.
  */
+
+const preloadImage = (url: string) => {
+  const img = new Image();
+  img.src = url;
+};
+
 const PokeInfo = () => {
   const location = useLocation();
-  const { id, name, sprite, sprite_back } = location.state || {};
+  const { id, name, sprite, sprite_back, counter } = location.state || {};
   const [isLoading, setIsLoading] = React.useState(false);
   const [flavorText, setFlavorText] = React.useState<string | null>(null);
-  const data = [sprite, sprite_back];
-
+  const [screenSize, setScreenSize] = React.useState({
+      cardWidth: 300,
+      cardHeight: 100,
+    });
+  
+  const { cardWidth, cardHeight } = screenSize;
+  const data = [ sprite, sprite_back ];
+  
   // Fetching the text from pokeAPI. This requires the pokemonID to be fetched first. After that, we pass it to the callback function
   // This is needded in order to avoid re-renders from the
   const fetchText = React.useCallback(async () => {
@@ -51,7 +63,10 @@ const PokeInfo = () => {
       toast.error(error + " Failed to fetch Pokémon details."); //If an error occurs hanlde it and raise an error toast
     }
   }, [id]);
-
+  React.useEffect(() => {
+    preloadImage(sprite);
+    preloadImage(sprite_back);
+  });
   React.useEffect(() => {
     if (id && !flavorText && !isLoading) {
       setIsLoading(true);
@@ -63,17 +78,35 @@ const PokeInfo = () => {
       });
     }
   }, [fetchText, flavorText, id, isLoading]);
-  console.log(isLoading);
-
+  React.useEffect(() => {
+      if (isLoading) {
+        updateScreenSize(); 
+        window.addEventListener("resize", updateScreenSize);
+        return () => window.removeEventListener("resize", updateScreenSize);
+      }
+  }, [isLoading]);
+  
+  const updateScreenSize = () => {
+    if (window.innerWidth >= 768) {
+      setScreenSize({ cardWidth: 306.47, cardHeight: 372.86 });
+    } else {
+      setScreenSize({ cardWidth: 279.89, cardHeight: 351.55 });
+    }
+  };
   return (
     <>
-      {/** If the  */}
       {!isLoading ? (
         <>
           {" "}
           <Card
             className="Info-Card"
-            sx={{ width: "50%", borderRadius: "8%", m: "auto", boxShadow: 3 }}
+            sx={{
+              "@media (max-width:500px)": { width: "90%" },
+              width: "50%",
+              borderRadius: "8%",
+              m: "auto",
+              boxShadow: 3,
+            }}
           >
             <Box sx={{ flexGrow: 1, justifyContent: "center" }}>
               <Grid container spacing={2}>
@@ -84,7 +117,7 @@ const PokeInfo = () => {
                   navButtonsAlwaysVisible
                 >
                   {data.map((item, i) => (
-                    <Item key={i} item={item as string} />
+                    <Item key={i} item={item as string} name={name as string} />
                   ))}
                 </Carousel>
               </Grid>
@@ -94,14 +127,24 @@ const PokeInfo = () => {
                   gutterBottom
                   variant="h5"
                   component="div"
+                  sx={{
+                    "@media (max-width: 500px)": {
+                      fontSize: "1.2rem",
+                    },
+                  }}
                 >
-                  PokéID: {id as number}
+                  #{id as number}
                 </Typography>
                 <Typography
                   className="Info-Text"
                   gutterBottom
                   variant="h5"
                   component="div"
+                  sx={{
+                    "@media (max-width: 500px)": {
+                      fontSize: "1.2rem",
+                    },
+                  }}
                 >
                   {name.toUpperCase()}
                 </Typography>
@@ -111,20 +154,25 @@ const PokeInfo = () => {
                 <Typography
                   variant="body2"
                   style={{ textWrap: "wrap" }}
-                  sx={{ wordBreak: "break-word", color: "text.secondary" }}
+                  sx={{
+                    wordBreak: "break-word",
+                    color: "text.secondary",
+                    "@media (max-width: 500px)": { fontSize: "0.8rem" },
+                  }}
                 >
-                  {flavorText}
+                  {flavorText?.toLowerCase()}
                 </Typography>
               </CardContent>
             </Box>
           </Card>
           {/** Head back to the PokemonList page */}
+          {/*    TODO: Just a link is fine. Or use the link as the `component` prop of `Button` */}
           <Button
             className="Routing-button"
             sx={{ m: 2, backgroundColor: "black" }}
             variant="text"
           >
-            <Link style={{ height: 24 }} to="/">
+            <Link style={{ height: 24 }} state={{counter}} to="/">
               <KeyboardBackspaceIcon style={{ color: "white" }} />
             </Link>{" "}
           </Button>{" "}
@@ -133,8 +181,8 @@ const PokeInfo = () => {
         <Skeleton
           animation="wave"
           variant="rectangular"
-          width={299.26}
-          height={372.84}
+          width={cardWidth}
+          height={cardHeight}
           sx={{ borderRadius: "8%", m: "auto", boxShadow: 3 }}
         />
       )}
