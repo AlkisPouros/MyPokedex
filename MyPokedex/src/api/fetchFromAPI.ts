@@ -3,10 +3,9 @@ import toast from 'react-hot-toast';
 
 
 // Here we fetch our favevourite pokemon from the api via a GET request in order to display these pokemon inside the Favourites page
-// This is done by communicating with our Node server
+// This is done by connected to our Node server (index.ts)
 
-
-
+// Type for a favouritePokemon in order to perform the GET FETCH
 export interface FavouritePokemon  {
     id: number;
     name: string;
@@ -22,7 +21,8 @@ export const fetchFromAPI = async () => {
         console.log(data as JSON);
         if(!response.ok)
         {
-            toast.error(response.status + " Pokemon have not been fetched");   // Raise an error toast with the respective response code in case of a failed fetch
+            // Raise an error toast with the respective response code in case of a failed fetch
+            toast.error(response.status + " Pokemon have not been fetched"); 
         }
         else
         {
@@ -36,8 +36,7 @@ export const fetchFromAPI = async () => {
 }
 
 
-// ask server if there are any favourite pokemon added. If there are, update the UI, UX accordingly (we need persistance for anything a user is done)
-// TODO: Should just return something
+// Asking the node server if there are any favourite pokemon added. If there are, update the UI, UX accordingly (we need persistance for anything a user is done)
 export const askServerForFavePomemon = async () => {
     
     try {

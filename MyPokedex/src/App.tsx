@@ -26,7 +26,7 @@ function App() {
           backgroundAttachment: "fixed",
           backgroundPosition: "center",
         }}
-      >
+      > {/** Setting the toaster for the entire application's notifications */}
         <Toaster position="top-center" reverseOrder={false} />
       </Box>
       <Box sx={{ padding: 2 }}>

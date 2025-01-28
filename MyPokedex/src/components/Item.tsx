@@ -20,6 +20,7 @@ const Item = ({item, name} : ItemProps)  =>
                     component='img'
                     image={item}
                     alt={name}
+                    loading="lazy"
                     sx = {{width: 150, justifySelf: 'center', boxShadow: 0}}
                 />
             </Paper>

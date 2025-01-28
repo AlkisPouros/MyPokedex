@@ -13,8 +13,6 @@ app.use(cors(corsOptions));
 // Parsing JSON request bodies
 app.use(express.json());
 
-//const rawData = fs.readFileSync('favourites.json');
-//const favouritesData = JSON.parse(rawData.toString('utf-8'));
 
 // Define the file path for the favourites JSON file
 const favouritesFilePath = path.join(__dirname, "favourites.json");
@@ -43,7 +41,7 @@ const writeFavouritesToFile = (
     "utf-8"
   );
 };
-
+// POST function to a selected from user pokemon to the server. Avoid any duplicates by checking if the ID exists.
 app.post("/api/favourites", (req: Request, res: Response) => {
   try {
     const { id, name, sprite } = req.body;
@@ -62,7 +60,7 @@ app.post("/api/favourites", (req: Request, res: Response) => {
     console.error("Error", error);
   }
 });
-// GET the list of the user's favourite pokemon
+// GET function to obtain the list of the user's favorite selected pokemon
 app.get("/api/favourites", (req: Request, res: Response) => {
   try {
     const favourites = readFavouritesFromFile();
@@ -72,13 +70,13 @@ app.get("/api/favourites", (req: Request, res: Response) => {
     console.log("Error", error);
   }
 });
-// DELETE a pokemon from the favourites list using its given ID
+// DELETE function to remove a pokemon from the favorites list using its given ID.  
 app.delete("/api/favourites", (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     const removedPokemon = { id };
     let favourites = readFavouritesFromFile();
-    // Remove the Pokémon with the given ID
+    // Remove the Pokémon with the given ID. 
     const updatedFavourites = favourites.filter((pokemon) => pokemon.id !== id);
     if (updatedFavourites.length !== favourites.length) {
       // If it has changed, write the updated list to the file
@@ -89,10 +87,6 @@ app.delete("/api/favourites", (req: Request, res: Response) => {
     res.status(501).send("Server error");
     console.error("Error ", error);
   }
-});
-//For testing purposes
-app.get("/api", (req: Request, res: Response) => {
-  res.json({ fruits: ["apple", "orange", "banana"] });
 });
 
 app.listen(port, () => {

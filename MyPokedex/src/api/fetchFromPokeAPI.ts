@@ -12,13 +12,6 @@ export interface Pokemon {
   };
 }
 
-export interface apiProps {
-  results: Pokemon[];
-}
-export interface spriteProps {
-  front_sprite: string;
-  back_sprite: string;
-}
 export interface speciesData {
   flavor_text_entries: { language: { name: string }; flavor_text: string }[];
 }
@@ -27,15 +20,13 @@ export type PokemonsData = {
   [key: number]: Pokemon;
 };
 
-// PokemonData[1]
 export type PokemonDataIndexes = number[];
 
+// Example of the structure of a single Pokémon based on the given Type
 // [1, 2, 3, 4, 5, 6, 7]
 
 // {150: {name: 'Mewtwo', url: '...', sprites: [], id: 150 }
 
-// TODO: We need to rethink the structure of pokemon data
-// Define the structure of a single Pokémon
 
 //Fetching from PokeAPI the pokemon sprites
 export const getPokemonSprite = async (id: number) => {
@@ -55,7 +46,6 @@ export const getPokemonSprite = async (id: number) => {
   }
 };
 //Fetching from PokeAPI the pokemon info
-//   TODO: Should just return something. Then manage the return value in react in any way you want
 export const fetchDataFromApi = async (number: number, maxValue: number) => {
   try {
     const response = await fetch(
@@ -69,6 +59,7 @@ export const fetchDataFromApi = async (number: number, maxValue: number) => {
   }
 };
 
+// POST Request to add a specific pokemon to the favourites list.
 export const addToFavourites = async (
   number: number,
   name: string,
@@ -91,7 +82,7 @@ export const addToFavourites = async (
 //Fetching from PokeAPI the pokemon description
 export const getPokeDescription = async (num: number) => {
   try {
-    const response = await fetch(`${api_desc_link}/${num + 1}/`);
+    const response = await fetch(`${api_desc_link}/${num}/`);
     const pokeDesc = await response.json();
     console.log(pokeDesc);
 

@@ -69,6 +69,7 @@ const PokemonList = () => {
     img.src = url;
   };
 
+  // Set the respective values for the values in order to determine per screen resolution, the grid and the sizes of the skeleton list cards.
   const updateScreenSize = () => {
     if (window.innerWidth >= 1100) {
       setScreenSize({ columns: 3, cardWidth: 173.78, cardHeight: 199.61 });
@@ -90,7 +91,7 @@ const PokemonList = () => {
   // Only when the apiData and spriteData change do we execute this, which means only on app entry and on refresh.
 
   const initializeData = React.useCallback(async () => {
-    const data = await fetchDataFromApi(0, 604);
+    const data = await fetchDataFromApi(0, 151);
     console.log(data);
     const pokemonData = data.reduce(
       (
@@ -114,8 +115,8 @@ const PokemonList = () => {
         }
       ) => {
         const urlParts = pokemon.url.split("/");
-        const pokemonId = parseInt(urlParts[6]); // The ID is always at index 6
-
+        // The ID is always at index 6
+        const pokemonId = parseInt(urlParts[6]);
         accumulator.dictionary[pokemonId] = {
           ...pokemon,
           id: pokemonId,
@@ -135,7 +136,7 @@ const PokemonList = () => {
       return getPokemonSprite(id);
     });
     const spritesList = await Promise.all(spritePromises);
-
+    // Save the pokemon sprites data
     spritesList.forEach((spriteData) => {
       pokemonData.dictionary[spriteData.id].sprites.front = spriteData?.front;
       pokemonData.dictionary[spriteData.id].sprites.back = spriteData?.back;
@@ -148,11 +149,15 @@ const PokemonList = () => {
       preloadImage(pokemonData.dictionary[id].sprites.front);
       preloadImage(pokemonData.dictionary[id].sprites.back);
     });
+
+    // Pagified list of pokemon persistance after navigating back to the pokemon list.
+    // This is done using the counter state value, which determines the pagination list to be displayed.
     if (location?.state?.counter !== undefined) {
       setCounter(location.state.counter);
     } else {
       setCounter(0);
     }
+    // Using the local storage o save it at every refresh.
     const savedCounter = localStorage.getItem("pokemonCounter");
     if (savedCounter !== null) {
       setCounter(Number(savedCounter));
@@ -165,9 +170,10 @@ const PokemonList = () => {
     if (data) return data;
   }, [location?.state?.counter, counter]);
 
+  // Execute the update function on every render.
   React.useEffect(() => {
     if (isLoaded) {
-      updateScreenSize(); 
+      updateScreenSize();
       window.addEventListener("resize", updateScreenSize);
       return () => window.removeEventListener("resize", updateScreenSize);
     }
@@ -281,7 +287,8 @@ const PokemonList = () => {
       return;
     }
   };
-
+  // Handle the input on click of the search button or by clicking keyboard key
+  // This function executtes based on the input given numeric or string inside the search bar
   const handleInputClick = () => {
     const trimmedValue = searchValue.trim();
     if (!trimmedValue || trimmedValue === "") {
@@ -301,7 +308,7 @@ const PokemonList = () => {
       const matchingPokemon = Object.values(pokemonData?.dictionary || {}).find(
         (pokemon) => pokemon.name.toLowerCase() === trimmedValue.toLowerCase()
       );
-
+      // If there is a match navigate to the respective pokemon page.
       if (matchingPokemon) {
         navigate(`/PokeInfo/${matchingPokemon.id}`, {
           state: {
@@ -311,11 +318,13 @@ const PokemonList = () => {
           },
         });
       } else {
+        // otherwise raise a toast
         toast.error("No Pokémon found!");
       }
     }
   };
 
+  // Function to sync the changes between the
   const handlePageChange = (page: number) => {
     setCounter(page);
   };

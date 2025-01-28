@@ -44,7 +44,7 @@ export default function PaginationOutlined({
     onPageChange(newCounter);
     localStorage.setItem("pokemonCounter", String(newCounter));
   };
-  // If we less pokemon (because of pokemonlist filtering) than what the pagination can display, then disable the pagination
+  // If we have less pokemon (because of pokemonlist filtering) than what the pagination can display, then disable the pagination
   const isPaginationDisabled =
     FilteredPokemonArraymaxLength <= 12 && FilteredPokemonArraymaxLength >= 0;
 

@@ -63,9 +63,12 @@ const Favourites = () => {
 
   return (
     <>
+      {/** If the favorite pokemon list is still loading render the skeleton */}
+      
       {!isLoading ? (
         <>
           <List>
+            {/** If theere no favorite pokemon display the below message */}
             {FavPokemon && FavPokemon.length === 0 && (
               <ListItem sx={{ justifyContent: "center" }}>
                 <Box
@@ -85,6 +88,7 @@ const Favourites = () => {
                 </Box>
               </ListItem>
             )}
+            {/** From the favorite pokemon list render the pokemon fetched from the server*/}
             {FavPokemon &&
               FavPokemon.map((info) => (
                 <ListItem>
@@ -101,6 +105,7 @@ const Favourites = () => {
                           sx={{ width: "50%", m: "auto" }}
                           image={Object.values(info)[2] as string}
                           alt={Object.values(info)[1] as string}
+                          loading="lazy"
                         />
                         <Box textAlign="center" sx={{ mt: 1, width: "100%" }}>
                           <Typography

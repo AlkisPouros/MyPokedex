@@ -22,6 +22,7 @@ const SearchBar = ({
   onInputChange,
   onSearchClick,
 }: SearchBarProps) => {
+  // Upon clicking enter, perform search of the value entered
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") onSearchClick();
   };
@@ -31,7 +32,8 @@ const SearchBar = ({
       <Paper
         onSubmit={
           (e) =>
-            e.preventDefault() /**Prevent page reloading for form resubmition*/
+          /**Prevent page reloading for form resubmition*/
+            e.preventDefault() 
         }
         component="form"
         sx={{
@@ -54,10 +56,7 @@ const SearchBar = ({
           onKeyDown={handleKeyPress}
         ></InputBase>
         <Divider sx={{ height: 20, m: 0.5 }} orientation="vertical" />
-        {/**Navigate to the poekinfo page in case we click on the search icon and there is a full correct string value or a numeric one inside the specified range*/}
-
-        {/* TODO: Untangle this, only use a link or a button, not both */}
-        {/** I NEED TO USE NAV */}
+        {/**Navigate to the poke info page in case we click on the search icon and there is a full correct string value or a numeric one inside the specified range*/}
 
         <IconButton
           type="button"

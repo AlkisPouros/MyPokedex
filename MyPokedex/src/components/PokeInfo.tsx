@@ -18,7 +18,7 @@ import {
 /**
  * This is the pokemonInfo component
  * Here after navigating from pokemonList either by clicking on the pokemon card or by searching and clickin the search icon
- * A simple card where there are details for the pokemon, like more sprites aligned inside a carousel, types as well as, a text in english language (for now) describing it.
+ * A simple card where there are details for the pokemon, like more sprites aligned inside a carousel, types as well as, a text in english (for now) describing it.
  */
 
 const preloadImage = (url: string) => {
@@ -27,6 +27,7 @@ const preloadImage = (url: string) => {
 };
 
 const PokeInfo = () => {
+  // React states initializations.
   const location = useLocation();
   const { id, name, sprite, sprite_back, counter } = location.state || {};
   const [isLoading, setIsLoading] = React.useState(false);
@@ -36,16 +37,17 @@ const PokeInfo = () => {
       cardHeight: 100,
     });
   
+  
   const { cardWidth, cardHeight } = screenSize;
   const data = [ sprite, sprite_back ];
   
   // Fetching the text from pokeAPI. This requires the pokemonID to be fetched first. After that, we pass it to the callback function
-  // This is needded in order to avoid re-renders from the
+  // This is needded in order to avoid re-renders 
   const fetchText = React.useCallback(async () => {
-    //fetch the pokemon description using the ID
+    // fetch the pokemon description using the ID
     try {
       const data = (await getPokeDescription(
-        id as number
+        id  as number
       )) as unknown as speciesData | null;
       console.log(data);
       // In the etxt entries array returned search for the one that matches english (for now)
@@ -67,6 +69,7 @@ const PokeInfo = () => {
     preloadImage(sprite);
     preloadImage(sprite_back);
   });
+  // Wait for the entire info set to be loaded then fetch the text, set it and display everything together without any latencies
   React.useEffect(() => {
     if (id && !flavorText && !isLoading) {
       setIsLoading(true);
@@ -78,6 +81,8 @@ const PokeInfo = () => {
       });
     }
   }, [fetchText, flavorText, id, isLoading]);
+
+  // Getting the window width at various resolutions. In order to define the size of the Skeletons.  
   React.useEffect(() => {
       if (isLoading) {
         updateScreenSize(); 
@@ -85,7 +90,8 @@ const PokeInfo = () => {
         return () => window.removeEventListener("resize", updateScreenSize);
       }
   }, [isLoading]);
-  
+
+  // Update screen size based on the window
   const updateScreenSize = () => {
     if (window.innerWidth >= 768) {
       setScreenSize({ cardWidth: 306.47, cardHeight: 372.86 });
@@ -95,6 +101,7 @@ const PokeInfo = () => {
   };
   return (
     <>
+      {/** If its no loading render the loading skeleton */}
       {!isLoading ? (
         <>
           {" "}
