@@ -89,6 +89,6 @@ app.delete("/api/favourites", (req: Request, res: Response) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running at ${port}`);
 });
