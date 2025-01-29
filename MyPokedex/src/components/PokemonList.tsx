@@ -234,6 +234,7 @@ const PokemonList = () => {
       .catch((error) => {
         toast.error("503 Server is down");
         setAddedPokemon((prev) => prev.filter((id) => id !== pokemonId));
+        console.log(error)
       });
 
     // Update the state for pokemon addition
