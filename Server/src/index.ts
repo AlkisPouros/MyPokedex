@@ -3,16 +3,23 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 
+const allowedOrigins = [
+  "https://mypokedex-0vz2.onrender.com",
+  "http://localhost:3000",
+];
+
 const corsOptions = {
-  origin: ["http://localhost:3000"],
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type"],
 };
+
 const app = express();
 const port = 5000;
 
 app.use(cors(corsOptions));
 // Parsing JSON request bodies
 app.use(express.json());
-
 
 // Define the file path for the favourites JSON file
 const favouritesFilePath = path.join(__dirname, "favourites.json");
@@ -53,7 +60,7 @@ app.post("/api/favourites", (req: Request, res: Response) => {
       favourites.push(newFavourite);
       // Write the updated favourites list to the file
       writeFavouritesToFile(favourites);
-      res.status(204).json(newFavourite);
+      res.status(201).json(newFavourite);
     }
   } catch (error) {
     res.status(501).send("Server Error");
@@ -70,18 +77,18 @@ app.get("/api/favourites", (req: Request, res: Response) => {
     console.log("Error", error);
   }
 });
-// DELETE function to remove a pokemon from the favorites list using its given ID.  
+// DELETE function to remove a pokemon from the favorites list using its given ID.
 app.delete("/api/favourites", (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     const removedPokemon = { id };
     let favourites = readFavouritesFromFile();
-    // Remove the Pokémon with the given ID. 
+    // Remove the Pokémon with the given ID.
     const updatedFavourites = favourites.filter((pokemon) => pokemon.id !== id);
     if (updatedFavourites.length !== favourites.length) {
       // If it has changed, write the updated list to the file
       writeFavouritesToFile(updatedFavourites);
-      res.status(200).send("Pokemon deleted successfully");
+      res.status(202).send("Pokemon deleted successfully");
     }
   } catch (error) {
     res.status(501).send("Server error");
@@ -89,6 +96,6 @@ app.delete("/api/favourites", (req: Request, res: Response) => {
   }
 });
 
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server running at http://localhost:${port}`);
 });
