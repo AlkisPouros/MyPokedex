@@ -16,7 +16,12 @@ export interface FavouritePokemon  {
 
 export const fetchFromAPI = async () => {
     try {
-        const response = await fetch(server_api_link);
+        const response = await fetch(server_api_link, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
         const data = await response.json();
         console.log(data as JSON);
         if(!response.ok)
@@ -40,7 +45,12 @@ export const fetchFromAPI = async () => {
 export const askServerForFavePomemon = async () => {
     
     try {
-                const response = await fetch(server_api_link); // Make sure the API link is correct
+                const response = await fetch(server_api_link, {
+                    method: "GET",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
                 if (!response.ok) {
                 toast.error(`Error fetching favorites: ${response.status}`);
                 }

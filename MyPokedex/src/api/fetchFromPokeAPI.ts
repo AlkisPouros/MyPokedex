@@ -82,7 +82,15 @@ export const addToFavourites = async (
 //Fetching from PokeAPI the pokemon description
 export const getPokeDescription = async (num: number) => {
   try {
-    const response = await fetch(`${api_desc_link}/${num}/`);
+    const response = await fetch(`${api_desc_link}/${num}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: num,
+      }),
+    });
     const pokeDesc = await response.json();
     console.log(pokeDesc);
 
