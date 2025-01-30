@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "id": 2,
+    "name": "ivysaur",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
+  }
+]

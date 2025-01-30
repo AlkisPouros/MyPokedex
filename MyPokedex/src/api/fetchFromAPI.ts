@@ -15,6 +15,7 @@ export interface FavouritePokemon  {
 
 
 export const fetchFromAPI = async () => {
+    console.log(server_api_link);
     try {
         const response = await fetch(server_api_link, {
             method: "GET",

@@ -9,7 +9,7 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: "*",
   methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type"],
 };
