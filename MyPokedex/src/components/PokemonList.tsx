@@ -411,7 +411,7 @@ const PokemonList = () => {
                       const sprite_back =
                         pokemonData?.dictionary[pokemonId].sprites.back;
                       console.log(
-                        filteredPokemon[pokemonId]?.id + " " + pokemonId
+                        sprite_back
                       );
                       return (
                         <Grid

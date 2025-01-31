@@ -1,15 +1,9 @@
 import toast from "react-hot-toast";
 import { FavouritePokemon } from "./fetchFromAPI";
 
-
 const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
 
-export const removeFromFavourites = async (
-  number: number,
-  setFavePokemon: React.Dispatch<
-    React.SetStateAction<FavouritePokemon[] | null>
-  >
-) => {
+export const removeFromFavourites = async (number: number) => {
   // Remove from localStorage immediately
   let updatedFavourites = JSON.parse(
     localStorage.getItem("favouritePokemons") || "[]"
@@ -18,12 +12,13 @@ export const removeFromFavourites = async (
 
   // Update localStorage with the new list
   localStorage.setItem("favouritePokemons", JSON.stringify(updatedFavourites));
-  // Optimistically remove the Pokémon from the local state immediately
-  setFavePokemon((prevFavourites) =>
-    prevFavourites
-      ? prevFavourites.filter((pokemon) => pokemon.id !== number)
-      : []
-  );
+
+  updatedFavourites = updatedFavourites
+    ? updatedFavourites.filter(
+        (addedPokemon: FavouritePokemon) => addedPokemon.id !== number
+      )
+    : [];
+  
   try {
     const response = await fetch(SERVER_URL, {
       method: "DELETE",
@@ -34,9 +29,11 @@ export const removeFromFavourites = async (
         id: number,
       }),
     });
-    if (response.ok) toast.success(response.status + " pokemon removed");
-    else toast.error(response.status + " Pokemon isnt removed");
+    if (response.ok) {
+      toast.success(response.status + " pokemon removed");
+    } else toast.error(response.status + " Pokemon isnt removed");
   } catch (error) {
     toast.error(error + " Something went wrong");
   }
+  return;
 };

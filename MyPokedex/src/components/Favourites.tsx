@@ -47,6 +47,13 @@ const Favourites = () => {
     }
   }, []);
 
+  const RemoveFromFavouritePokeList = async (id: number) => {
+    await removeFromFavourites(id);
+    const updatedPokemonList = await FetchFavourites();
+    setFavePokemon(updatedPokemonList as FavouritePokemon[]);
+    
+  };
+  
   const [screenSize, setScreenSize] = React.useState({
     columns: 1,
     cardWidth: 300,
@@ -150,9 +157,8 @@ const Favourites = () => {
                           <Button
                             variant="text"
                             onClick={() =>
-                              removeFromFavourites(
-                                Object.values(info)[0] as number,
-                                setFavePokemon
+                              RemoveFromFavouritePokeList(
+                                Object.values(info)[0] as number
                               )
                             }
                           >
