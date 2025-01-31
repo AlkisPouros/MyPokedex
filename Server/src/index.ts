@@ -4,10 +4,9 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 
-
 dotenv.config();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",")
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",");
 
 const corsOptions = {
   origin: allowedOrigins,
@@ -17,7 +16,6 @@ const corsOptions = {
 
 const app = express();
 const port = process.env.PORT || 5000;
-
 
 app.use(cors(corsOptions));
 // Parsing JSON request bodies
