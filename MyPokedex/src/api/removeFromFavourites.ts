@@ -1,6 +1,8 @@
 import toast from "react-hot-toast";
 import { FavouritePokemon } from "./fetchFromAPI";
-import { server_api_link } from "./PokeApiLinks";
+
+
+const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
 
 export const removeFromFavourites = async (
   number: number,
@@ -23,7 +25,7 @@ export const removeFromFavourites = async (
       : []
   );
   try {
-    const response = await fetch(server_api_link, {
+    const response = await fetch(SERVER_URL, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

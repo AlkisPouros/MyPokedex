@@ -1,5 +1,9 @@
 import toast from "react-hot-toast";
-import { apilink, server_api_link, api_desc_link } from "./PokeApiLinks";
+
+const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
+const API_POKE_DESC = import.meta.env.VITE_API_DESC_URL;
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 // Define the structure of a single Pokémon
 export interface Pokemon {
@@ -31,7 +35,7 @@ export type PokemonDataIndexes = number[];
 //Fetching from PokeAPI the pokemon sprites
 export const getPokemonSprite = async (id: number) => {
   try {
-    const response = await fetch(`${apilink}/${id}`);
+    const response = await fetch(`${API_URL}/${id}`);
     const pokemonSprite = await response.json();
 
     const PokemonSprites = {
@@ -49,7 +53,7 @@ export const getPokemonSprite = async (id: number) => {
 export const fetchDataFromApi = async (number: number, maxValue: number) => {
   try {
     const response = await fetch(
-      apilink + `?offset=${number}&limit=${maxValue}`
+      API_URL + `?offset=${number}&limit=${maxValue}`
     );
     const PokeData = await response.json();
     console.log(PokeData.results);
@@ -65,7 +69,7 @@ export const addToFavourites = async (
   name: string,
   sprite: string
 ) => {
-  const response = await fetch(server_api_link, {
+  const response = await fetch(SERVER_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +86,7 @@ export const addToFavourites = async (
 //Fetching from PokeAPI the pokemon description
 export const getPokeDescription = async (num: number) => {
   try {
-    const response = await fetch(`${api_desc_link}/${num}/`, {
+    const response = await fetch(`${API_POKE_DESC}/${num}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

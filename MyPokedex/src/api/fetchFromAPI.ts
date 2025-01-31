@@ -1,6 +1,6 @@
-import { server_api_link } from "./PokeApiLinks";
 import toast from 'react-hot-toast';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
 
 // Here we fetch our favevourite pokemon from the api via a GET request in order to display these pokemon inside the Favourites page
 // This is done by connected to our Node server (index.ts)
@@ -15,9 +15,9 @@ export interface FavouritePokemon  {
 
 
 export const fetchFromAPI = async () => {
-    console.log(server_api_link);
+    console.log(SERVER_URL);
     try {
-        const response = await fetch(server_api_link, {
+        const response = await fetch(SERVER_URL, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export const fetchFromAPI = async () => {
 export const askServerForFavePomemon = async () => {
     
     try {
-                const response = await fetch(server_api_link, {
+                const response = await fetch(SERVER_URL, {
                     method: "GET",
                     headers: {
                       "Content-Type": "application/json",

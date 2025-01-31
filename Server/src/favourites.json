@@ -3,5 +3,10 @@
     "id": 2,
     "name": "ivysaur",
     "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
+  },
+  {
+    "id": 5,
+    "name": "charmeleon",
+    "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"
   }
 ]

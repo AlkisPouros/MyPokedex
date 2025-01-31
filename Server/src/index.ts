@@ -2,20 +2,22 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
 
-const allowedOrigins = [
-  "https://mypokedex-0vz2.onrender.com",
-  "http://localhost:3000",
-];
+
+dotenv.config();
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",")
 
 const corsOptions = {
-  origin: "*",
+  origin: allowedOrigins,
   methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type"],
 };
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
+
 
 app.use(cors(corsOptions));
 // Parsing JSON request bodies
@@ -96,6 +98,6 @@ app.delete("/api/favourites", (req: Request, res: Response) => {
   }
 });
 
-app.listen(port, "0.0.0.0", () => {
+app.listen(Number(port), "0.0.0.0", () => {
   console.log(`Server running at http://localhost:${port}`);
 });

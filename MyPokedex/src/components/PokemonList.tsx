@@ -365,7 +365,7 @@ const PokemonList = () => {
                       p: "5px",
                     }}
                   >
-                    <Link to={"/Favourites"} style={{ height: 24 }}>
+                    <Link to={"/Favourites"} style={{ height: 24 }} state={{FavPokeArrayLength: addedPokemon.length}}>
                       <FavoriteIcon style={{ color: "red" }} />
                     </Link>
                   </IconButton>

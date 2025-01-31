@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { fetchFromAPI, FavouritePokemon } from "../api/fetchFromAPI";
 import { removeFromFavourites } from "../api/removeFromFavourites";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
@@ -22,13 +22,14 @@ import Grid from "@mui/material/Grid2";
  * Like mentioned inside the pokemonList component, if the server is not available then the component cannot be accessed and a message will be shown on the main list.
  */
 
-
 const preloadImage = (url: string) => {
   const img = new Image();
   img.src = url;
 };
 
 const Favourites = () => {
+  const location = useLocation();
+  const { FavPokeArrayLength } = location.state || {};
   const [FavPokemon, setFavePokemon] = React.useState<
     FavouritePokemon[] | null
   >(null);
@@ -46,6 +47,19 @@ const Favourites = () => {
     }
   }, []);
 
+  const [screenSize, setScreenSize] = React.useState({
+    columns: 1,
+    cardWidth: 300,
+    cardHeight: 100,
+  });
+
+  const { columns, cardWidth, cardHeight } = screenSize;
+  const skeletonCount = columns * FavPokeArrayLength;
+
+  const updateScreenSize = () => {
+    setScreenSize({ columns: 1, cardWidth: 225, cardHeight: 207 });
+  };
+
   // On each render of this component fetch the data from the server
   useEffect(() => {
     if (!FavPokemon && !isLoading) {
@@ -54,17 +68,27 @@ const Favourites = () => {
         if (response) {
           setIsLoading(false);
           setFavePokemon(response);
-          response?.forEach((FavePokemon: FavouritePokemon) => { preloadImage(FavePokemon.sprite); })
+          response?.forEach((FavePokemon: FavouritePokemon) => {
+            preloadImage(FavePokemon.sprite);
+          });
         }
       });
-      
     }
   }, [FavPokemon, isLoading, FetchFavourites]);
+
+  // Execute the update function on every render.
+  React.useEffect(() => {
+    if (isLoading) {
+      updateScreenSize();
+      window.addEventListener("resize", updateScreenSize);
+      return () => window.removeEventListener("resize", updateScreenSize);
+    }
+  }, [isLoading]);
 
   return (
     <>
       {/** If the favorite pokemon list is still loading render the skeleton */}
-      
+
       {!isLoading ? (
         <>
           <List>
@@ -94,7 +118,7 @@ const Favourites = () => {
                 <ListItem>
                   <Card
                     className="card"
-                    sx={{ width: "50", m: "auto", borderRadius: "8%" }}
+                    sx={{ m: "auto", borderRadius: "8%", minWidth: 230 }}
                   >
                     <CardActionArea
                       sx={{ flexgrow: 1, justifyContent: "center" }}
@@ -154,20 +178,30 @@ const Favourites = () => {
         </>
       ) : (
         <>
-          <Box>
-            <Skeleton
-              sx={{ mb: 2 }}
-              variant="rectangular"
-              width={277.03}
-              height={236.04}
-              animation="pulse"
-            />
-            <Skeleton
-              variant="rectangular"
-              animation="pulse"
-              width={277.03}
-              height={236.04}
-            />
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: 650,
+            }}
+          >
+            <Box sx={{ flexGrow: 1 }}>
+              {Array.from({ length: skeletonCount }).map((_, index) => (
+                <Grid key={index} width="100%">
+                  <Skeleton
+                    variant="rectangular"
+                    animation="pulse"
+                    sx={{
+                      width: cardWidth,
+                      height: cardHeight,
+                      borderRadius: "8%",
+                      margin: "auto",
+                      mt: 5,
+                    }}
+                  />
+                </Grid>
+              ))}
+              ;
+            </Box>
           </Box>
         </>
       )}
