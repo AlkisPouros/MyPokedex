@@ -173,7 +173,6 @@ const PokeInfo = () => {
             </Box>
           </Card>
           {/** Head back to the PokemonList page */}
-          {/*    TODO: Just a link is fine. Or use the link as the `component` prop of `Button` */}
           <Button
             className="Routing-button"
             sx={{ m: 2, backgroundColor: "black" }}

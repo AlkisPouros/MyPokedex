@@ -13,6 +13,7 @@ const preloadImage = (url: string) => {
   img.src = url;
 };
 
+
 function App() {
   useEffect(() => {
     preloadImage(pokedexLogo);
@@ -20,24 +21,25 @@ function App() {
 
   return (
     <>
-      <Box
-        style={{
-          backgroundSize: "cover",
-          backgroundAttachment: "fixed",
-          backgroundPosition: "center",
-        }}
-      > {/** Setting the toaster for the entire application's notifications */}
-        <Toaster position="top-center" reverseOrder={false} />
-      </Box>
-      <Box sx={{ padding: 2 }}>
-        <img src={pokedexLogo} height={80} alt="Pokedex" />
-      </Box>
-      <Routes>
-        <Route path="/" element={<PokemonList />} />
-        <Route path="/PokeInfo/:id" element={<PokeInfo />} />
-        <Route path="/Favourites" element={<Favourites />} />
-      </Routes>
-    </>
+        <Box
+          style={{
+            backgroundSize: "cover",
+            backgroundAttachment: "fixed",
+            backgroundPosition: "center",
+          }}
+        > {/** Setting the toaster for the entire application's notifications */}
+          <Toaster position="top-center" reverseOrder={false} />
+        </Box>
+        <Box sx={{ padding: 2 }}>
+          <img src={pokedexLogo} height={80} alt="Pokedex" />
+        </Box>
+        <Routes>
+          <Route path="/" element={<PokemonList />} />
+          <Route path="/PokeInfo/:id" element={<PokeInfo />} />
+          <Route path="/Favourites" element={<Favourites />} />
+        </Routes>
+      </>
+    
   );
 }
 

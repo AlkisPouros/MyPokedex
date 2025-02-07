@@ -1,10 +1,18 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import fs from "fs";
-import path from "path";
+import path, { resolve } from "path";
 import dotenv from "dotenv";
+import { v4 as uuidv4 } from "uuid";
+import { MongoClient, FindOptions } from "mongodb";
 
 dotenv.config();
+
+const dbUserName = encodeURIComponent("alkispouros");
+const dbPassword = encodeURIComponent("HelloThere");
+
+const uri = `mongodb+srv://${dbUserName}:${dbPassword}@mypokedexcluster.61scs.mongodb.net/?retryWrites=true&w=majority&appName=MyPokedexCluster`;
+const client = new MongoClient(uri);
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",");
 
@@ -96,6 +104,231 @@ app.delete("/api/favourites", (req: Request, res: Response) => {
   }
 });
 
+// Handler function in order to entablish a DB conection
+
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB");
+    return client.db("MYPokedexDB");
+  } catch (error) {
+    console.error("Database connection error", error);
+    throw error;
+  }
+}
+
+// POST function to sign up user by posting their credentials on the database.
+
+app.post("/api/signup-service", async (request, response) => {
+  console.log("Signup Service Activated");
+  const { username, password } = request.body;
+
+  if (!username || !password) {
+    response
+      .status(400)
+      .json({ responseCode: 400, message: "Missing credentials" });
+  }
+  try {
+    const db = await connectDB();
+    const collection = client.db("MYPokedexDB").collection("UserInfo");
+    const query = { username, password };
+    const document = [{ username, password }];
+    const options: FindOptions<Document> = {
+      sort: { username: 1 },
+      projection: {
+        _id: 0,
+        username: 1,
+        password: 1,
+      },
+    };
+    const users = await collection.find(query, options).toArray();
+    if (users.length === 1) {
+      response
+        .status(409)
+        .json({ ResponseCode: 409, message: "User already exists" });
+    } else {
+      const results = await collection.insertMany(document);
+      response.status(201).json({
+        ResponseCode: 201,
+        message: "Successfully signed in",
+        results,
+      });
+    }
+  } catch (error) {
+    console.error(error + " Error during DB access");
+  }
+});
+
+// POST function to sign in user by accessing the database.
+
+app.post("/api/login-service", async (request, response) => {
+  console.log("Login Service Activated");
+  const { username, password } = request.body;
+  if (!username || !password) {
+    response
+      .status(400)
+      .json({ responseCode: 400, message: "Missing credentials" });
+  }
+
+  try {
+    const db = await connectDB();
+    const collection = client.db("MYPokedexDB").collection("UserInfo");
+    const query = { username, password };
+
+    const options: FindOptions<Document> = {
+      sort: { username: 1 },
+      projection: {
+        _id: 0,
+        username: 1,
+        password: 1,
+      },
+    };
+
+    const users = await collection.find(query, options).toArray();
+
+    if (users.length === 1) {
+      response.status(200).json({
+        ResponseCode: 200,
+        sessionId: uuidv4(),
+        username: username,
+        password: password,
+      });
+    } else {
+      response
+        .status(401)
+        .json({ ResponseCode: 401, message: "Invalid Credentials" });
+    }
+  } catch (error) {
+    console.error("Error during DB access: ", error);
+    response
+      .status(500)
+      .json({ responseCode: 500, message: "Internal Server error" });
+  }
+});
+
+// POST function for a logged in user to add pokemon to their own collection of favourites, inside the database.
+
+app.post(
+  "/api/favourite-pokemon-addition-service",
+  async (request, response) => {
+    console.log("favourite pokemon addition service activated");
+    const { name, id, front_sprite, back_sprite, sessionId, username } =
+      request.body;
+    if (!name || !id || !front_sprite || !back_sprite) {
+      response
+        .status(400)
+        .json({ responseCode: 400, message: "No pokemon found" });
+    }
+    try {
+      const db = await connectDB();
+      const collection = await client
+        .db("MYPokedexDB")
+        .collection("AllConnectedUsers");
+      const query = { username: username, currentSessionId: sessionId };
+      const options: FindOptions<Document> = {
+        sort: { username: 1 },
+        projection: {
+          _id: 0,
+          username: 1,
+          currentSessionId: 1,
+        },
+      };
+      const user = await collection.find(query, options).toArray();
+      if (user.length === 1) {
+        const collection = await client
+          .db("MYPokedexDB")
+          .collection("FavouritePokemon");
+        const pokemon = {
+          pokeName: name,
+          pokeId: id,
+          pokeSprite_front: front_sprite,
+          pokeSprte_back: back_sprite,
+          FavouriteListHolderUserName: username,
+          FavouriteListHolderSessionId: sessionId,
+        };
+        const result = await collection.insertOne(pokemon);
+        console.log(result);
+        console.log(result.acknowledged);
+        if (result.acknowledged)
+          response
+            .status(201)
+            .json({ responseCode: 201, message: "Pokemon Added" });
+      } else {
+        response
+          .status(500)
+          .json({ responseCode: 500, message: "Cannot add pokemon" });
+      }
+    } catch (error) {
+      console.error("Error during DB access: ", error);
+      response
+        .status(500)
+        .json({ responseCode: 500, message: "Internal Server error" });
+    }
+  }
+);
+
+// GET function for a logged in user retrieve their favourite pokemon from the database
+
+app.get(
+  "/api/favourite-pokemon-retrieval-service",
+  async (request, response) => {
+    console.log("pokemon retrieval service activated");
+    const { username, sessionId } = request.body;
+    if (!username || !sessionId) {
+      response
+        .status(400)
+        .json({ responseCode: 400, message: "No pokemon found" });
+    }
+    try {
+      const collection = await client
+        .db("MYPokedexDB")
+        .collection("AllConnectedUsers");
+      const query = {
+        username: username,
+        currentSessionId: sessionId,
+      };
+      const options: FindOptions<Document> = {
+        sort: { username: 1 },
+        projection: {
+          _id: 0,
+          username: 1,
+          currentSessionId: 1,
+        },
+      };
+      const user = await collection.find(query, options).toArray();
+      if (user.length === 1) {
+        const collection = await client
+          .db("MYPokedexDB")
+          .collection("FavouritePokemon");
+        const FavouritePokemon = await collection.find({
+          $or: [
+            { FavouriteListHolderUserName: username },
+            { FavouriteListHolderSessionId: sessionId },
+          ],
+        }).toArray();
+        console.log(FavouritePokemon);
+        if (FavouritePokemon)
+          response.status(200).json({responseCode: 200, message: "pokemon fetched successfully", FavouritePokemon})
+      } else {
+        response
+          .status(500)
+          .json({ responseCode: 500, message: "Cannot retrieve pokemon" });
+      }
+    } catch (error) {
+      console.error("Error during DB access: ", error);
+      response
+        .status(500)
+        .json({ responseCode: 500, message: "Internal Server error" });
+    }
+  }
+);
+
+// DELETE function for a logged in user to remove a pokemon from their favourites list. 
+
+app.delete("/api/pokemon-removal-service" , async (request, response) => {
+  console.log("pokemon removal service activated");
+
+})
 app.listen(Number(port), "0.0.0.0", () => {
   console.log(`Server running at http://localhost:${port}`);
 });

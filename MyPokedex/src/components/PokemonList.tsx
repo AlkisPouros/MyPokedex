@@ -13,6 +13,7 @@ import SearchBar from "./SearchBar";
 import PaginationOutlined from "./PaginationOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import Grid from "@mui/material/Grid2";
 import {
   Box,
@@ -25,8 +26,14 @@ import {
   Button,
   IconButton,
   Skeleton,
+  styled,
+  Tooltip,
+  tooltipClasses,
+  TooltipProps,
 } from "@mui/material";
 import "../index.css";
+import AuthModals from "./AuthModals";
+import { useAuth } from "../AuthProvider";
 
 /* This is the pokemon list component, the main screen of the application.
    Here After fetching the first 151 pokemon of the ,using the pokeAPI, we map the pokemon storing them inside an array in order to hanlde the PAGINATION EFFECT. 
@@ -37,19 +44,18 @@ import "../index.css";
 const PokemonList = () => {
   // React state initializations
 
-  // EVERYTHING NECCESARY IS HERE!!!
   const [pokemonData, setPokemonData] = React.useState<{
     dictionary: PokemonsData;
     orderList: number[];
   } | null>(null);
   const [searchValue, setSearchValue] = React.useState("");
-
+  // use the isUserSignedIn when needed.
+  const { isUserSignedIn, username, login, signup, logout } = useAuth();
   const [filteredPokemon, setFilteredPokemon] = React.useState<Pokemon[]>([]);
-  // TODO: What is the counter?
   const [counter, setCounter] = React.useState<number>(0);
-  // TODO: Give this a more descriptive name
   const [addedPokemon, setAddedPokemon] = React.useState<number[]>([]);
-
+  // TODO : DO I NEED THIS ONE ??? 
+  const [ userName, setuserName] = React.useState<string | null>(null);
   const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
 
   const [screenSize, setScreenSize] = React.useState({
@@ -68,6 +74,16 @@ const PokemonList = () => {
     const img = new Image();
     img.src = url;
   };
+  const BootstrapTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} arrow classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.arrow}`]: {
+      color: theme.palette.common.black,
+    },
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.black,
+    },
+  }));
 
   // Set the respective values for the values in order to determine per screen resolution, the grid and the sizes of the skeleton list cards.
   const updateScreenSize = () => {
@@ -145,6 +161,7 @@ const PokemonList = () => {
     setFilteredPokemon(
       pokemonData.orderList.map((id: number) => pokemonData.dictionary[id])
     );
+    // TODO: PREFETCH THE SPRITES FROM SERVER
     pokemonData.orderList.map((id: number) => {
       preloadImage(pokemonData.dictionary[id].sprites.front);
       preloadImage(pokemonData.dictionary[id].sprites.back);
@@ -221,6 +238,7 @@ const PokemonList = () => {
     name: string,
     sprite: string
   ) => {
+    if (!isUserSignedIn) { toast.error("you need to sign in first"); return; }
     addToFavourites(pokemonId, name, sprite)
       .then((res) => {
         if (res?.ok) {
@@ -234,7 +252,7 @@ const PokemonList = () => {
       .catch((error) => {
         toast.error("503 Server is down");
         setAddedPokemon((prev) => prev.filter((id) => id !== pokemonId));
-        console.log(error)
+        console.log(error);
       });
 
     // Update the state for pokemon addition
@@ -336,6 +354,11 @@ const PokemonList = () => {
       setCounter(Number(savedCounter));
     }
   }, []);
+  React.useEffect(() => {
+    if(!userName)
+      setuserName(localStorage.getItem("userName"));
+    console.log(userName)
+  }, [userName]);
   return (
     <>
       {/** The UI, is writen using materialUI, a grid of three rows on large displays, 2 columns on medium and 1 on small display, */}
@@ -355,8 +378,8 @@ const PokemonList = () => {
                   onSearchClick={handleInputClick}
                   searchValue={searchValue}
                 />
-                {/**If the server is not available then deny the navigation to the favourites page */}
-                {addedPokemon.length !== 0 ? (
+                {/**If the server is not available and the user not signed in, then deny the navigation to the favourites page */}
+                {addedPokemon.length !== 0 && isUserSignedIn ? (
                   <IconButton
                     className="no-hover"
                     sx={{
@@ -365,7 +388,11 @@ const PokemonList = () => {
                       p: "5px",
                     }}
                   >
-                    <Link to={"/Favourites"} style={{ height: 24 }} state={{FavPokeArrayLength: addedPokemon.length}}>
+                    <Link
+                      to={"/Favourites"}
+                      style={{ height: 24 }}
+                      state={{ FavPokeArrayLength: addedPokemon.length }}
+                    >
                       <FavoriteIcon style={{ color: "red" }} />
                     </Link>
                   </IconButton>
@@ -381,6 +408,68 @@ const PokemonList = () => {
                     <FavoriteIcon style={{ color: "white" }} />
                   </IconButton>
                 )}
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "50%",
+                    maxWidth: 650,
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      flexGrow: 1,
+                      justifyContent: "center",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {isUserSignedIn ? (
+                      <>
+                        <Box
+                          sx={{
+                            backgroundColor: "white",
+                            borderStyle: "solid",
+                            borderColor: "black",
+                            p: 2,
+                            borderRadius: 2,
+                            width: "50%",
+                          }}
+                        >
+                          <Typography
+                            p={{ pr: 1 }}
+                            sx={{ textAlign: "center", wordBreak: "break-word" }}
+                            style={{ color: "black" }}
+                          >
+                            Welcome {username}
+                          </Typography>
+                        </Box>
+                          <BootstrapTooltip
+                            disableInteractive
+                            enterDelay={300}
+                            leaveDelay={200}
+                            title={
+                              <React.Fragment>
+                                <Typography color="inherit">Log out</Typography>
+                              </React.Fragment>
+                            }
+                          >
+                            <Button
+                              sx={{ backgroundColor: "black", borderRadius: 2, flexGrow: 0.1, m: 1 }}
+                              onClick={logout}
+                            >
+                              <KeyboardBackspaceIcon style={{ color: "white" }} />
+                            </Button>
+                          </BootstrapTooltip>
+                      </>
+                    ) : (
+                      <AuthModals login={login} signup={signup} />
+                    )}
+                  </Box>
+                </Box>
               </Grid>
             </Box>
             {filteredPokemon.length > 0 ? (
@@ -410,9 +499,7 @@ const PokemonList = () => {
                       const pokeName = pokemonData?.dictionary[pokemonId].name;
                       const sprite_back =
                         pokemonData?.dictionary[pokemonId].sprites.back;
-                      console.log(
-                        sprite_back
-                      );
+                      console.log(sprite_back);
                       return (
                         <Grid
                           key={Number(pokemonId)}
@@ -438,8 +525,8 @@ const PokemonList = () => {
                                         filteredPokemon.length > 3
                                           ? "100%"
                                           : filteredPokemon.length === 1
-                                          ? 600
-                                          : 500,
+                                            ? 600
+                                            : 500,
                                       mr: 4,
                                     },
                                   "@media (min-width: 800px)": {
@@ -447,8 +534,8 @@ const PokemonList = () => {
                                       filteredPokemon.length > 3
                                         ? "100%"
                                         : filteredPokemon.length === 1
-                                        ? 600
-                                        : 500,
+                                          ? 600
+                                          : 500,
                                   },
                                   "@media (max-width: 600px) and (min-width: 400px)":
                                     {
@@ -458,8 +545,9 @@ const PokemonList = () => {
                                     },
                                 }}
                               >
-                                {/**If the state for favorite pokemon has updated update the UI, define if the button is clickable on server availability or not also*/}
-                                {addedPokemon.includes(Number(pokemonId)) ? (
+                                {/**If the state for favourite pokemon has updated update the UI, define if the button is clickable on server availability or not also*/}
+                                {addedPokemon.includes(Number(pokemonId)) &&
+                                isUserSignedIn ? (
                                   <Box textAlign="right">
                                     <Button variant="text">
                                       <FavoriteIcon style={{ color: "red" }} />
