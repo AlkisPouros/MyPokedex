@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   fetchDataFromApi,
@@ -7,265 +7,171 @@ import {
   Pokemon,
   PokemonsData,
   getPokemonSprite,
+  FIRST_POKEMON_ID,
+  LAST_POKEMON_ID,
 } from "../api/fetchFromPokeAPI";
-import { askServerForFavePomemon } from "../api/fetchFromAPI";
-import SearchBar from "./SearchBar";
+import { askServerForFavePomemon } from "../api/fetchFavouritesFromServer";
 import PaginationOutlined from "./PaginationOutlined";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import Grid from "@mui/material/Grid2";
-import {
-  Box,
-  List,
-  ListItem,
-  Card,
-  Typography,
-  CardActionArea,
-  CardMedia,
-  Button,
-  IconButton,
-  Skeleton,
-  styled,
-  Tooltip,
-  tooltipClasses,
-  TooltipProps,
-} from "@mui/material";
+import Skeletons from "./Skeletons";
+import { Box } from "@mui/material";
 import "../index.css";
-import AuthModals from "./AuthModals";
 import { useAuth } from "../AuthProvider";
+import MainPokemonListArea from "./MainPokemonListArea";
+import { useQuery, useQueryClient } from "react-query";
 
 /* This is the pokemon list component, the main screen of the application.
-   Here After fetching the first 151 pokemon of the ,using the pokeAPI, we map the pokemon storing them inside an array in order to hanlde the PAGINATION EFFECT. 
+   Here After fetching the first 151 Kanto pokemon of the ,using the pokeAPI, we map the pokemon storing them inside an array in order to hanlde the PAGINATION EFFECT. 
    The users can navigate through the pokemon list, click on a pokemon and navigate to their info page forming the respective endpoint. They can also save a pokemon they like
    by clicking on the heart inside the capokemon cards and check through the heart/favourites link beside the search bar their favourite pokemon, if they have any.
    Lastly there is the pokemon search bar which can be used to search a pokemon via name or ID. */
 
 const PokemonList = () => {
   // React state initializations
-
   const [pokemonData, setPokemonData] = React.useState<{
     dictionary: PokemonsData;
     orderList: number[];
   } | null>(null);
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = React.useState("");
   // use the isUserSignedIn when needed.
-  const { isUserSignedIn, username, login, signup, logout } = useAuth();
+  const { isUserSignedIn } = useAuth();
   const [filteredPokemon, setFilteredPokemon] = React.useState<Pokemon[]>([]);
   const [counter, setCounter] = React.useState<number>(0);
-  const [addedPokemon, setAddedPokemon] = React.useState<number[]>([]);
-  // TODO : DO I NEED THIS ONE ??? 
-  const [ userName, setuserName] = React.useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
-
-  const [screenSize, setScreenSize] = React.useState({
-    columns: 3,
-    cardWidth: 300,
-    cardHeight: 100,
-  });
-
-  const { columns, cardWidth, cardHeight } = screenSize;
-  const skeletonCount = columns * 4;
-
-  const navigate = useNavigate();
+  // TODO: CHECK WHAT WILL BE DONE WITH THIS ONE
+  const [addedPokemon, setAddedPokemon] = React.useState<number[] | undefined>(
+    []
+  );
+  const queryClient = useQueryClient();
+  const [userName, setuserName] = React.useState<string | null>(null);
+  const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const location = useLocation();
-
-  const preloadImage = (url: string) => {
-    const img = new Image();
-    img.src = url;
-  };
-  const BootstrapTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} arrow classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.arrow}`]: {
-      color: theme.palette.common.black,
-    },
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: theme.palette.common.black,
-    },
-  }));
-
-  // Set the respective values for the values in order to determine per screen resolution, the grid and the sizes of the skeleton list cards.
-  const updateScreenSize = () => {
-    if (window.innerWidth >= 1100) {
-      setScreenSize({ columns: 3, cardWidth: 173.78, cardHeight: 199.61 });
-    } else if (window.innerWidth <= 1100 && window.innerWidth >= 900) {
-      setScreenSize({ columns: 3, cardWidth: 173.98, cardHeight: 199.61 });
-    } else if (window.innerWidth <= 768 && window.innerWidth >= 598) {
-      setScreenSize({ columns: 2, cardWidth: 253, cardHeight: 247.02 });
-    } else if (window.innerWidth <= 598 && window.innerWidth >= 420) {
-      setScreenSize({ columns: 1, cardWidth: 320, cardHeight: 300 });
-    } else {
-      setScreenSize({ columns: 1, cardWidth: 223.19, cardHeight: 238.69 });
-    }
-  };
 
   // Fetching the pokemon from the PokeAPI
   // Using the useCallBackFunction in order to cache the response from the api between re-renders
-  // !!!Important because we rely on many asynchronus operations to update states and operate on our Data Collections,
   // Which means that every time we perform a state change that might influence he UI, UX and app logic we need to perform changes to state values per render ONLY ONCE
   // Only when the apiData and spriteData change do we execute this, which means only on app entry and on refresh.
 
-  const initializeData = React.useCallback(async () => {
-    const data = await fetchDataFromApi(0, 151);
-    console.log(data);
-    const pokemonData = data.reduce(
-      (
-        accumulator: {
-          dictionary: {
-            id: number;
-            sprites: { front: string; back: string };
-            name: string;
-            url: string;
-          }[];
-          orderList: number[];
-        },
-        pokemon: {
-          url: string;
-          id: number;
-          name: string;
-          sprites: {
-            front: string;
-            back: string;
+  const { refetch } = useQuery({
+    queryKey: ["apiData"],
+    queryFn: async () =>
+      await fetchDataFromApi(FIRST_POKEMON_ID, LAST_POKEMON_ID),
+    onSuccess: (data) => {
+      if (data) {
+        initializeData(data);
+      }
+    },
+    staleTime: 10 * (60 * 1000),
+    cacheTime: 15 * (60 * 1000),
+    refetchOnWindowFocus: true,
+    keepPreviousData: true,
+  });
+
+  const initializeData = React.useCallback(
+    async (data) => {
+      if (!data) return;
+      console.log(data);
+      const pokemonData = data?.reduce(
+        (accumulator, pokemon) => {
+          const urlParts = pokemon.url.split("/");
+          const pokemonId = parseInt(urlParts[6]);
+          accumulator.dictionary[pokemonId] = {
+            ...pokemon,
+            id: pokemonId,
+            name: pokemon.name,
+            url: pokemon.url,
+            sprites: { front: "", back: "" },
           };
-        }
-      ) => {
-        const urlParts = pokemon.url.split("/");
-        // The ID is always at index 6
-        const pokemonId = parseInt(urlParts[6]);
-        accumulator.dictionary[pokemonId] = {
-          ...pokemon,
-          id: pokemonId,
-          name: pokemon.name,
-          url: pokemon.url,
-          sprites: { front: "", back: "" },
-        };
-        accumulator.orderList.push(pokemonId);
+          accumulator.orderList.push(pokemonId);
+          return accumulator;
+        },
+        { dictionary: {}, orderList: [] }
+      );
 
-        return accumulator;
-      },
-      { dictionary: {}, orderList: [] }
-    );
-    console.log(pokemonData);
-    const spritePromises = pokemonData.orderList.map(async (id: number) => {
-      // Call getPokemonSprites to fetch the sprite data for this Pokémon
-      return getPokemonSprite(id);
-    });
-    const spritesList = await Promise.all(spritePromises);
-    // Save the pokemon sprites data
-    spritesList.forEach((spriteData) => {
-      pokemonData.dictionary[spriteData.id].sprites.front = spriteData?.front;
-      pokemonData.dictionary[spriteData.id].sprites.back = spriteData?.back;
-    });
-    setPokemonData(pokemonData);
-    setFilteredPokemon(
-      pokemonData.orderList.map((id: number) => pokemonData.dictionary[id])
-    );
-    // TODO: PREFETCH THE SPRITES FROM SERVER
-    pokemonData.orderList.map((id: number) => {
-      preloadImage(pokemonData.dictionary[id].sprites.front);
-      preloadImage(pokemonData.dictionary[id].sprites.back);
-    });
+      console.log(pokemonData);
 
-    // Pagified list of pokemon persistance after navigating back to the pokemon list.
-    // This is done using the counter state value, which determines the pagination list to be displayed.
-    if (location?.state?.counter !== undefined) {
-      setCounter(location.state.counter);
-    } else {
-      setCounter(0);
-    }
-    // Using the local storage o save it at every refresh.
+      const spritePromises = pokemonData?.orderList.map(async (id) => {
+        return getPokemonSprite(id);
+      });
+
+      const spritesList = await Promise.all(spritePromises);
+      spritesList.forEach((spriteData) => {
+        pokemonData.dictionary[spriteData.id].sprites.front = spriteData?.front;
+        pokemonData.dictionary[spriteData.id].sprites.back = spriteData?.back;
+      });
+
+      setPokemonData(pokemonData);
+      setFilteredPokemon(
+        pokemonData.orderList.map((id) => pokemonData?.dictionary[id])
+      );
+
+      // Handle pagination state
+      const savedCounter = localStorage.getItem("pokemonCounter");
+      setCounter(
+        savedCounter ? Number(savedCounter) : location?.state?.counter || 0
+      );
+      setTimeout(() => setIsLoading(false), 200);
+    },
+    [location?.state?.counter]
+  );
+
+  const { data: favourites } = useQuery({
+    queryKey: ["favourites", sessionId],
+    queryFn: async () =>
+      await askServerForFavePomemon(sessionId as string, pokemonData),
+    onSuccess: (favourites) => {
+      fetchFavourites(favourites?.FavouritePokemonID as number[]);
+    },
+    staleTime: 10 * (60 * 1000),
+    cacheTime: 15 * (60 * 1000),
+    refetchOnWindowFocus: true,
+    enabled: !!sessionId,
+  });
+  React.useEffect(() => {
     const savedCounter = localStorage.getItem("pokemonCounter");
     if (savedCounter !== null) {
       setCounter(Number(savedCounter));
-    } else if (location?.state?.counter !== undefined) {
-      setCounter(location.state.counter);
-    } else {
-      setCounter(0);
     }
-    console.log(counter);
-    if (data) return data;
-  }, [location?.state?.counter, counter]);
-
-  // Execute the update function on every render.
+  }, []);
   React.useEffect(() => {
-    if (isLoaded) {
-      updateScreenSize();
-      window.addEventListener("resize", updateScreenSize);
-      return () => window.removeEventListener("resize", updateScreenSize);
-    }
-  }, [isLoaded]);
+    const storedUserName = localStorage.getItem("userName");
+    const storedSessionId = localStorage.getItem("sessionId");
 
-  // On use Effect, on page render trigger the fetch, only on app entry and on refresh.
+    console.log("Stored userName:", storedUserName);
+    console.log("Stored sessionId:", storedSessionId);
+    console.log("isUserSignedIn:", isUserSignedIn);
 
+    if (storedUserName) setuserName(storedUserName);
+    if (storedSessionId) setSessionId(storedSessionId);
+  }, [userName, sessionId, isUserSignedIn]);
   React.useEffect(() => {
-    if (!pokemonData && !isLoaded) {
-      setIsLoaded(true);
-      initializeData().then((response) => {
-        if (response) {
-          setIsLoaded(false);
-        }
-      });
-      console.log(pokemonData);
+    console.log(isLoading);
+    if (isLoading) {
+      refetch()
+        .then(() => {
+          if (filteredPokemon.length > 0) {
+            setTimeout(() => setIsLoading(false), 200);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          setIsLoading(true);
+        });
+      console.log(isLoading + " Fetching completed");
     }
-  }, [pokemonData, initializeData, filteredPokemon, isLoaded]);
+  }, [refetch, isLoading, filteredPokemon]);
 
   // On every app entry and refresh we should also maintain the state for favourite addition for consistency inside the UI.
 
-  const fetchFavorites = async () => {
-    try {
-      const favorites = await askServerForFavePomemon();
-      if (Array.isArray(favorites)) {
-        // Extract the `id` field from each object in the response
-        setAddedPokemon(favorites.map((item: { id: number }) => item.id));
-      } else {
-        console.error("Unexpected response format from the server");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to fetch favourites");
+  const fetchFavourites = async (favourites: number[]) => {
+    if (Array.isArray(favourites) && isUserSignedIn) {
+      // Extract the `id` field from each object in the response
+      setAddedPokemon(favourites.map((id: number) => id));
+      localStorage.setItem("addedPokemon", JSON.stringify(favourites));
+    } else {
+      console.error("Unexpected response format from the server");
       setAddedPokemon([]);
     }
-  };
-  // On each render (only once)
-  React.useEffect(() => {
-    if (pokemonData) fetchFavorites();
-  }, [pokemonData]);
-
-  // Add to favourite functionlity hanlder Also check if the pokemon included already exists.
-  const handleAddToFavourites = (
-    pokemonId: number,
-    name: string,
-    sprite: string
-  ) => {
-    if (!isUserSignedIn) { toast.error("you need to sign in first"); return; }
-    addToFavourites(pokemonId, name, sprite)
-      .then((res) => {
-        if (res?.ok) {
-          toast.success(res.status + " Pokemon Added");
-        } else {
-          toast.error(res?.status + " Pokemon not added");
-          setAddedPokemon((prev) => prev.filter((id) => id !== pokemonId));
-        }
-      })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .catch((error) => {
-        toast.error("503 Server is down");
-        setAddedPokemon((prev) => prev.filter((id) => id !== pokemonId));
-        console.log(error);
-      });
-
-    // Update the state for pokemon addition
-    setAddedPokemon((prev) => {
-      // Check if Pokémon is already in the favorites
-      if (prev.includes(pokemonId)) {
-        // Remove it if it exists
-        return prev.filter((id) => id !== pokemonId);
-      } else {
-        // Add it if it doesn't exist
-        return [...prev, pokemonId];
-      }
-    });
   };
 
   const handleInputChange = (value: string) => {
@@ -343,341 +249,58 @@ const PokemonList = () => {
     }
   };
 
+  // Add to favourite functionlity hanlder Also check if the pokemon included already exists.
+  const handleAddToFavourites = (pokemonId: number) => {
+    if (!isUserSignedIn) {
+      toast.error("You need to sign in first");
+      return;
+    }
+
+    // Optimistically update UI before the API request
+    setAddedPokemon((prev) =>
+      prev?.includes(pokemonId)
+        ? prev?.filter((id) => id !== pokemonId)
+        : [...(prev as number[]), pokemonId]
+    );
+    addToFavourites(pokemonId, sessionId as string)
+      .then((res) => {
+        if (res?.ok) {
+          queryClient.invalidateQueries(["favourites", sessionId as string]);
+        }
+      })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .catch((error) => {
+        setAddedPokemon((favourites) =>
+          favourites?.filter((id) => id !== pokemonId)
+        );
+        console.log(error);
+      });
+  };
+
   // Function to sync the changes between the
   const handlePageChange = (page: number) => {
     setCounter(page);
   };
 
-  React.useEffect(() => {
-    const savedCounter = localStorage.getItem("pokemonCounter");
-    if (savedCounter !== null) {
-      setCounter(Number(savedCounter));
-    }
-  }, []);
-  React.useEffect(() => {
-    if(!userName)
-      setuserName(localStorage.getItem("userName"));
-    console.log(userName)
-  }, [userName]);
   return (
     <>
       {/** The UI, is writen using materialUI, a grid of three rows on large displays, 2 columns on medium and 1 on small display, */}
 
-      {!isLoaded ? (
+      {!isLoading ? (
         <>
-          <Box sx={{ width: "100%", maxWidth: 650 }}>
-            <nav aria-label="main mailbox folders"></nav>
-            <Box sx={{ flexGrow: 1 }}>
-              <Grid
-                container
-                spacing={1}
-                sx={{ m: 1.5, justifyContent: "center" }}
-              >
-                <SearchBar
-                  onInputChange={handleInputChange}
-                  onSearchClick={handleInputClick}
-                  searchValue={searchValue}
-                />
-                {/**If the server is not available and the user not signed in, then deny the navigation to the favourites page */}
-                {addedPokemon.length !== 0 && isUserSignedIn ? (
-                  <IconButton
-                    className="no-hover"
-                    sx={{
-                      borderRadius: "5px",
-                      backgroundColor: "black",
-                      p: "5px",
-                    }}
-                  >
-                    <Link
-                      to={"/Favourites"}
-                      style={{ height: 24 }}
-                      state={{ FavPokeArrayLength: addedPokemon.length }}
-                    >
-                      <FavoriteIcon style={{ color: "red" }} />
-                    </Link>
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    className="no-hover"
-                    sx={{
-                      borderRadius: "5px",
-                      p: "5px",
-                      backgroundColor: "black",
-                    }}
-                  >
-                    <FavoriteIcon style={{ color: "white" }} />
-                  </IconButton>
-                )}
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "50%",
-                    maxWidth: 650,
-                    mt: 2,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      flexGrow: 1,
-                      justifyContent: "center",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {isUserSignedIn ? (
-                      <>
-                        <Box
-                          sx={{
-                            backgroundColor: "white",
-                            borderStyle: "solid",
-                            borderColor: "black",
-                            p: 2,
-                            borderRadius: 2,
-                            width: "50%",
-                          }}
-                        >
-                          <Typography
-                            p={{ pr: 1 }}
-                            sx={{ textAlign: "center", wordBreak: "break-word" }}
-                            style={{ color: "black" }}
-                          >
-                            Welcome {username}
-                          </Typography>
-                        </Box>
-                          <BootstrapTooltip
-                            disableInteractive
-                            enterDelay={300}
-                            leaveDelay={200}
-                            title={
-                              <React.Fragment>
-                                <Typography color="inherit">Log out</Typography>
-                              </React.Fragment>
-                            }
-                          >
-                            <Button
-                              sx={{ backgroundColor: "black", borderRadius: 2, flexGrow: 0.1, m: 1 }}
-                              onClick={logout}
-                            >
-                              <KeyboardBackspaceIcon style={{ color: "white" }} />
-                            </Button>
-                          </BootstrapTooltip>
-                      </>
-                    ) : (
-                      <AuthModals login={login} signup={signup} />
-                    )}
-                  </Box>
-                </Box>
-              </Grid>
-            </Box>
-            {filteredPokemon.length > 0 ? (
-              <List sx={{ flexGrow: 1, flexWrap: "wrap" }}>
-                <Grid
-                  container
-                  spacing={2}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100%",
-                  }}
-                  size={{ xs: 5 }}
-                >
-                  {/** If poke data are fetched check, as well as, assign the filtered poekmon array to the FILTERED VALUES IF SEARCH OCCURS otherwise to all of the pokemon fetched, then slice them based on the disaply offest for pagination and map the results  */}
-                  {filteredPokemon
-                    .slice(counter, counter + 12)
-                    .map((pokemon) => {
-                      const pokemonId = pokemon?.id;
-
-                      {
-                        /** Mapping using the ID from the url of the filtered pokemon (poekmon type (see NOTES on fetchFromAPI.ts file) or from the full array of pokemon */
-                      }
-                      const sprite_front =
-                        pokemonData?.dictionary[pokemonId].sprites.front;
-                      const pokeName = pokemonData?.dictionary[pokemonId].name;
-                      const sprite_back =
-                        pokemonData?.dictionary[pokemonId].sprites.back;
-                      console.log(sprite_back);
-                      return (
-                        <Grid
-                          key={Number(pokemonId)}
-                          size={{ xs: 8, sm: 6, md: 4, lg: 4 }}
-                          width="100%"
-                        >
-                          <ListItem
-                            sx={{ width: "100%", p: 2, alignItems: "center" }}
-                          >
-                            {sprite_front && (
-                              <Card
-                                className="card"
-                                sx={{
-                                  alignItems: "center",
-                                  borderRadius: "8%",
-                                  "@media (max-width:400px)": {
-                                    width: "80%",
-                                    ml: 3,
-                                  },
-                                  "@media ((min-width: 600px) and (max-width: 800px))":
-                                    {
-                                      width:
-                                        filteredPokemon.length > 3
-                                          ? "100%"
-                                          : filteredPokemon.length === 1
-                                            ? 600
-                                            : 500,
-                                      mr: 4,
-                                    },
-                                  "@media (min-width: 800px)": {
-                                    width:
-                                      filteredPokemon.length > 3
-                                        ? "100%"
-                                        : filteredPokemon.length === 1
-                                          ? 600
-                                          : 500,
-                                  },
-                                  "@media (max-width: 600px) and (min-width: 400px)":
-                                    {
-                                      width: "80%",
-                                      ml: 5,
-                                      mr: 5,
-                                    },
-                                }}
-                              >
-                                {/**If the state for favourite pokemon has updated update the UI, define if the button is clickable on server availability or not also*/}
-                                {addedPokemon.includes(Number(pokemonId)) &&
-                                isUserSignedIn ? (
-                                  <Box textAlign="right">
-                                    <Button variant="text">
-                                      <FavoriteIcon style={{ color: "red" }} />
-                                    </Button>
-                                  </Box>
-                                ) : (
-                                  <Box textAlign="right">
-                                    <Button
-                                      sx={{ textAlign: "right" }}
-                                      variant="text"
-                                      onClick={() =>
-                                        handleAddToFavourites(
-                                          Number(pokemonId),
-                                          pokeName || "",
-                                          pokemonData?.dictionary[
-                                            Number(pokemonId)
-                                          ].sprites.front || ""
-                                        )
-                                      }
-                                    >
-                                      <FavoriteBorderIcon
-                                        sx={{
-                                          "@media (max-width:400px)": {
-                                            fontSize: "130%",
-                                          },
-                                        }}
-                                        style={{ color: "black" }}
-                                      />
-                                    </Button>
-                                  </Box>
-                                )}
-                                <Link
-                                  className="no-hover"
-                                  to={`/PokeInfo/${Number(pokemonId)}`}
-                                  state={{
-                                    id: pokemonId,
-                                    name: pokeName || "",
-                                    sprite: sprite_front || "",
-                                    sprite_back: sprite_back || "",
-                                    counter: counter,
-                                  }}
-                                >
-                                  <CardActionArea
-                                    sx={{ textAlign: "center", width: "100%" }}
-                                  >
-                                    <CardMedia
-                                      component="img"
-                                      image={sprite_front}
-                                      alt={pokeName}
-                                      style={{ width: "60%", margin: "auto" }}
-                                    />
-                                    <Box sx={{ mb: 2 }}>
-                                      <Typography
-                                        sx={{
-                                          "@media (max-width:500px)": {
-                                            fontSize: "0.80rem",
-                                          },
-                                          "@media (max-width:600px)": {
-                                            fontSize: "1.10rem",
-                                          },
-
-                                          "@media (min-width: 600px)": {
-                                            fontSize: "0.90rem",
-                                          },
-                                          "@media (max-width: 330px)": {
-                                            fontSize: "0.90rem",
-                                          },
-                                        }}
-                                        variant="body1"
-                                        component="div"
-                                        className="card-text"
-                                      >
-                                        #{Number(pokemonId)}
-                                      </Typography>
-                                      <Typography
-                                        sx={{
-                                          "@media (max-width:500px)": {
-                                            fontSize: "0.90rem",
-                                          },
-
-                                          "@media (max-width:600px)": {
-                                            fontSize: "1.10rem",
-                                          },
-
-                                          "@media (min-width: 600px)": {
-                                            fontSize: "0.90rem",
-                                          },
-                                          "@media (max-width: 330px)": {
-                                            fontSize: "0.90rem",
-                                          },
-                                        }}
-                                        variant="body1"
-                                        component="div"
-                                        className="card-text"
-                                      >
-                                        {pokeName?.toUpperCase()}
-                                      </Typography>
-                                    </Box>
-                                  </CardActionArea>
-                                </Link>
-                              </Card>
-                            )}
-                          </ListItem>
-                        </Grid>
-                      );
-                    })}
-                </Grid>
-              </List>
-            ) : (
-              <>
-                <ListItem sx={{ justifyContent: "center" }}>
-                  <Box
-                    textAlign="left"
-                    sx={{
-                      backgroundColor: "white",
-                      borderStyle: "solid",
-                      borderColor: "black",
-                      p: 2,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Box sx={{ height: "50%", backgroundColor: "red" }}></Box>
-                    <Typography p={{ pr: 1 }} style={{ color: "black" }}>
-                      No Pokémon Found
-                    </Typography>
-                  </Box>
-                </ListItem>
-              </>
-            )}
-          </Box>
+         
+            <MainPokemonListArea
+              isUserSignedIn={isUserSignedIn}
+              counter={counter}
+              searchValue={searchValue}
+              sessionId={sessionId as string}
+              filteredPokemon={filteredPokemon}
+              pokemonData={pokemonData}
+              addedPokemon={favourites?.FavouritePokemonID as number[]}
+              handleAddToFavourites={handleAddToFavourites}
+              handleInputChange={handleInputChange}
+              handleInputClick={handleInputClick}
+            />
           <Box
             sx={{
               display: "flex",
@@ -689,83 +312,21 @@ const PokemonList = () => {
               "@media (max-width: 360px)": {},
             }}
           >
-            <PaginationOutlined
-              maxValue={pokemonData?.orderList.length}
-              counter={counter}
-              FilteredPokemonArraymaxLength={filteredPokemon.length}
-              onPageChange={handlePageChange}
-            />
+            {filteredPokemon.length > 0 ? (
+              <PaginationOutlined
+                maxValue={pokemonData?.orderList.length}
+                counter={counter}
+                FilteredPokemonArraymaxLength={filteredPokemon.length}
+                onPageChange={handlePageChange}
+              />
+            ) : (
+              <></>
+            )}
           </Box>
         </>
       ) : (
         <>
-          <Box sx={{ width: "100%", maxWidth: 650 }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Grid
-                container
-                spacing={1}
-                sx={{ m: 1.5, justifyContent: "center" }}
-              >
-                <Skeleton
-                  variant="rectangular"
-                  width={254}
-                  height={32}
-                  animation="pulse"
-                  sx={{ borderRadius: 1 }}
-                />
-                <Skeleton
-                  variant="rounded"
-                  width={34}
-                  height={34}
-                  sx={{ borderRadius: 2 }}
-                  animation="pulse"
-                />
-              </Grid>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "space-evenly",
-                alignItems: "center",
-                maxWidth: 650,
-                flexGrow: 2,
-              }}
-            >
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                }}
-              >
-                {/** <Skeleton variant="rectangular" /> */}
-                {Array.from({ length: skeletonCount }).map((_, index) => (
-                  <Grid
-                    size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
-                    key={index}
-                    width="100%"
-                  >
-                    <Skeleton
-                      variant="rectangular"
-                      animation="pulse"
-                      sx={{
-                        width: cardWidth,
-                        height: cardHeight,
-                        borderRadius: "8%",
-                        margin: "auto",
-                        mt: 5,
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          </Box>
+          <Skeletons skeletons={12} isUserSignedIn={isUserSignedIn} />
         </>
       )}
     </>

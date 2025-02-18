@@ -6,21 +6,32 @@ import pokedexLogo from "./assets/pokedex-logo.png";
 import Box from "@mui/material/Box";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
-import { useEffect } from "react";
+import { createTheme, ThemeProvider } from "@mui/material";
 
-const preloadImage = (url: string) => {
-  const img = new Image();
-  img.src = url;
-};
-
+const theme = createTheme({
+  palette: {
+    background: {
+      default: "transparent", 
+    },
+  },
+  typography: {
+    fontFamily: "Montserrat, sans-serif",
+    h1: {
+      fontSize: "1.4em",
+      textTransform: "uppercase",
+      fontWeight: 700,
+      letterSpacing: ".15em",
+      marginBottom: ".5em",
+    },
+  },
+});
 
 function App() {
-  useEffect(() => {
-    preloadImage(pokedexLogo);
-  }, []);
+ 
 
   return (
     <>
+      <ThemeProvider theme={theme}>
         <Box
           style={{
             backgroundSize: "cover",
@@ -38,7 +49,8 @@ function App() {
           <Route path="/PokeInfo/:id" element={<PokeInfo />} />
           <Route path="/Favourites" element={<Favourites />} />
         </Routes>
-      </>
+      </ThemeProvider>
+    </>
     
   );
 }

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 const SERVER_LOGIN_SERVICE_URL = import.meta.env.VITE_SERVER_LOGIN_API_URL;
 const SERVER_SIGNUP_SERVICE_URL = import.meta.env.VITE_SERVER_SIGNUP_API_URL;
+const SERVER_LOGOUT_SERVICE_URL = import.meta.env.VITE_SERVER_LOGOUT_API_URL;
 
 // TODO: CHECK WHAT HAPPENS WITH THIS INTERFACE
 
@@ -15,6 +16,7 @@ export interface AuthResponse {
 interface AuthContextType {
   isUserSignedIn: boolean;
   username: string | null;
+  sessionId: string | null;
   login: (username: string, password: string) => void; // ARROW FUNCTION USED FOR PARAMETER PASSING
   logout: () => void;
   signup: (username: string, password: string) => void;
@@ -38,6 +40,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [username, setUserName] = useState<string | null>(
     localStorage.getItem("userName")
   );
+  const [sessionId, setSessionId] = useState<string| null>(localStorage.getItem("sessionId"));
 
   React.useEffect(() => {
     const storedSession = localStorage.getItem("sessionId");
@@ -45,7 +48,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     if (storedSession) {
       setIsUserSignedIn(true);
       setUserName(storedname);
+      setSessionId(storedSession);
     }
+    console.log(storedSession as string);
   }, []);
 
   const login = async (username: string, password: string) => {
@@ -87,11 +92,33 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const logout = () => {
-    setIsUserSignedIn(false);
-    localStorage.removeItem("sessionId");
-    localStorage.removeItem("userName");
-    toast.success("Logged out successfully");
+  const logout = async () => {
+    try {
+      const sessionId = localStorage.getItem("sessionId") as string;
+      console.log(sessionId);
+      const response = await fetch(SERVER_LOGOUT_SERVICE_URL, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+        }),
+      }).then(async (response) => {
+        const responseData = await response.json();
+        if (responseData.responseCode === 200) {
+          toast.success(responseData.message);
+          setIsUserSignedIn(false);
+          localStorage.removeItem("sessionId");
+          localStorage.removeItem("userName");
+        } else {
+          toast.error(`${responseData.responseCode} ${responseData.message}`);
+        }
+      });
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const signup = (username: string, password: string) => {
@@ -105,24 +132,35 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
           username: username,
           password: password,
         }),
-      }).then((response) => {
-        if (response.ok) {
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json(); // Get error message from server
+            console.log(errorData.responseCode);
+            throw new Error(
+              /** (errorData?.responseCode as number)*/ +"409" +
+                " " +
+                errorData.message || "Signup failed"
+            );
+          }
+          return;
+        })
+        .then(() => {
           console.log("Welcome to MyPokedex");
-        } else {
-          console.error(response.statusText + " Failed to sign in");
-        }
-      }),
+        }),
       {
-        loading: "Signing you up",
-        success: "Account created successfully",
-        error: (error) => error.response.data.message,
+        loading: "Signing you up...",
+        success:
+          /*(responseCode) =>  responseCode*/ "201" +
+          " Account created successfully",
+        error: (error) => error.message,
       }
     );
   };
 
   return (
     <AuthContext.Provider
-      value={{ isUserSignedIn, username, login, logout, signup }}
+      value={{ isUserSignedIn, username, sessionId, login, logout, signup }}
     >
       {children}
     </AuthContext.Provider>

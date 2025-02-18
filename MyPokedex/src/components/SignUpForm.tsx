@@ -2,10 +2,11 @@ import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
 type SignUpFormProps = {
-  handleCloseSignUp: () => void;
   signUp: (username: string, password: string) => void;
+  handleCloseSignUp: () => void;
+  handleCloseSignIn: () => void;
 };
-const SignUpForm = ({ handleCloseSignUp, signUp }: SignUpFormProps) => {
+const SignUpForm = ({ signUp ,handleCloseSignUp, handleCloseSignIn }: SignUpFormProps) => {
   const [userName, setuserName] = useState("");
   const [password, setPassword] = useState("");
   const [userNameError, setuserNameError] = useState("");
@@ -22,6 +23,8 @@ const SignUpForm = ({ handleCloseSignUp, signUp }: SignUpFormProps) => {
       setuserNameError("");
       setPasswordError("");
       signUp(userName, password);
+      handleCloseSignUp();
+      handleCloseSignIn();
     }
   };
   const validateuserName = (userName: string) => {

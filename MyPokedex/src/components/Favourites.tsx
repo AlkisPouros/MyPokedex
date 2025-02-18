@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { fetchFromAPI, FavouritePokemon } from "../api/fetchFromAPI";
+import { askServerForFavePomemon } from "../api/fetchFavouritesFromServer";
 import { removeFromFavourites } from "../api/removeFromFavourites";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   CardActionArea,
   CardMedia,
@@ -15,6 +16,8 @@ import {
   Skeleton,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { Pokemon, PokemonsData } from "../api/fetchFromPokeAPI";
+import { useQuery, useQueryClient } from "react-query";
 
 /**
  * This is the Favourites component
@@ -22,38 +25,29 @@ import Grid from "@mui/material/Grid2";
  * Like mentioned inside the pokemonList component, if the server is not available then the component cannot be accessed and a message will be shown on the main list.
  */
 
-const preloadImage = (url: string) => {
-  const img = new Image();
-  img.src = url;
-};
-
 const Favourites = () => {
   const location = useLocation();
-  const { FavPokeArrayLength } = location.state || {};
-  const [FavPokemon, setFavePokemon] = React.useState<
-    FavouritePokemon[] | null
-  >(null);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-
-  const FetchFavourites = React.useCallback(async () => {
-    try {
-      const data = (await fetchFromAPI()) as unknown as
-        | FavouritePokemon[]
-        | null;
-      return data;
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-  }, []);
-
-  const RemoveFromFavouritePokeList = async (id: number) => {
-    await removeFromFavourites(id);
-    const updatedPokemonList = await FetchFavourites();
-    setFavePokemon(updatedPokemonList as FavouritePokemon[]);
-    
-  };
+  const { FavPokeArrayLength, sessionId, pokemonData } = location.state || {};
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const queryClient = useQueryClient(); 
   
+  const { data: favourites } = useQuery({
+    queryKey: ["favourites"],
+    queryFn: async () => await askServerForFavePomemon(sessionId as string, pokemonData as {
+        dictionary: PokemonsData;
+        orderList: number[];
+      } | null ),
+    onSuccess: () => {
+      setIsLoading(false);
+    }
+  })
+
+
+  const RemoveFromFavouritePokeList = async (sessionId: string, id: number) => {
+    await removeFromFavourites(sessionId, id);
+    queryClient.invalidateQueries(["favourites"]);
+  };
+
   const [screenSize, setScreenSize] = React.useState({
     columns: 1,
     cardWidth: 300,
@@ -66,23 +60,7 @@ const Favourites = () => {
   const updateScreenSize = () => {
     setScreenSize({ columns: 1, cardWidth: 225, cardHeight: 207 });
   };
-
-  // On each render of this component fetch the data from the server
-  useEffect(() => {
-    if (!FavPokemon && !isLoading) {
-      setIsLoading(true);
-      FetchFavourites().then((response) => {
-        if (response) {
-          setIsLoading(false);
-          setFavePokemon(response);
-          response?.forEach((FavePokemon: FavouritePokemon) => {
-            preloadImage(FavePokemon.sprite);
-          });
-        }
-      });
-    }
-  }, [FavPokemon, isLoading, FetchFavourites]);
-
+  
   // Execute the update function on every render.
   React.useEffect(() => {
     if (isLoading) {
@@ -94,13 +72,13 @@ const Favourites = () => {
 
   return (
     <>
-      {/** If the favorite pokemon list is still loading render the skeleton */}
+      {/** If the favourite pokemon list is still loading render the skeleton */}
 
       {!isLoading ? (
         <>
           <List>
-            {/** If theere no favorite pokemon display the below message */}
-            {FavPokemon && FavPokemon.length === 0 && (
+            {/** If there are no favorite pokemon display the below message */}
+            {favourites?.FavouritePokemon && (favourites?.FavouritePokemon as Pokemon[]).length === 0 && (
               <ListItem sx={{ justifyContent: "center" }}>
                 <Box
                   textAlign="left"
@@ -120,8 +98,8 @@ const Favourites = () => {
               </ListItem>
             )}
             {/** From the favorite pokemon list render the pokemon fetched from the server*/}
-            {FavPokemon &&
-              FavPokemon.map((info) => (
+            {favourites?.FavouritePokemon &&
+              (favourites?.FavouritePokemon as Pokemon[]).map((info) => (
                 <ListItem>
                   <Card
                     className="card"
@@ -134,8 +112,8 @@ const Favourites = () => {
                         <CardMedia
                           component="img"
                           sx={{ width: "50%", m: "auto" }}
-                          image={Object.values(info)[2] as string}
-                          alt={Object.values(info)[1] as string}
+                          image={Object.values(info)[3].front as string}
+                          alt={Object.values(info)[0] as string}
                           loading="lazy"
                         />
                         <Box textAlign="center" sx={{ mt: 1, width: "100%" }}>
@@ -144,25 +122,26 @@ const Favourites = () => {
                             variant="body1"
                             component="div"
                           >
-                            #{Object.values(info)[0]}
+                            #{Object.values(info)[2]}
                           </Typography>
                           <Typography
                             className="card-text"
                             variant="body1"
                             component="div"
                           >
-                            {(Object.values(info)[1] as string).toUpperCase()}
+                            {(Object.values(info)[0] as string).toUpperCase()}
                           </Typography>
 
                           <Button
-                            variant="text"
+                            sx={{ backgroundColor: "transparent", m : 1 }}
                             onClick={() =>
                               RemoveFromFavouritePokeList(
-                                Object.values(info)[0] as number
+                                sessionId as string,
+                                Object.values(info)[2] as number
                               )
                             }
                           >
-                            Remove
+                            <DeleteIcon style={{color: "black"}} />
                           </Button>
                         </Box>
                       </Grid>
@@ -206,7 +185,6 @@ const Favourites = () => {
                   />
                 </Grid>
               ))}
-              ;
             </Box>
           </Box>
         </>

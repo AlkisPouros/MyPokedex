@@ -3,13 +3,18 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { BrowserRouter } from "react-router-dom";
-import AuthProvider  from "./AuthProvider.tsx"
+import AuthProvider from "./AuthProvider.tsx"
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

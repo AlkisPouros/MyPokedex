@@ -1,9 +1,11 @@
 import toast from "react-hot-toast";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
+
 const API_POKE_DESC = import.meta.env.VITE_API_DESC_URL;
 const API_URL = import.meta.env.VITE_API_URL;
-
+const SERVER_POKE_ADDITION_URL = import.meta.env.VITE_SERVER_POKE_ADDITION_URL;
+export const FIRST_POKEMON_ID = import.meta.env.VITE_FIRST_POKEMON_ID;
+export const LAST_POKEMON_ID = import.meta.env.VITE_LAST_POKEMON_ID;
 
 // Define the structure of a single Pokémon
 export interface Pokemon {
@@ -66,20 +68,23 @@ export const fetchDataFromApi = async (number: number, maxValue: number) => {
 // POST Request to add a specific pokemon to the favourites list.
 export const addToFavourites = async (
   number: number,
-  name: string,
-  sprite: string
+  sessionId: string,
 ) => {
-  const response = await fetch(SERVER_URL, {
+  const response = await fetch(SERVER_POKE_ADDITION_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       id: number,
-      name: name,
-      sprite: sprite,
+      sessionId : sessionId,
     }),
   });
+  const data = await response.json();
+  if (data.responseCode === 201)
+    toast.success(data.message);
+  else
+    toast.error(data.message);
   return response;
 };
 

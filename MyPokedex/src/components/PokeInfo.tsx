@@ -21,10 +21,6 @@ import {
  * A simple card where there are details for the pokemon, like more sprites aligned inside a carousel, types as well as, a text in english (for now) describing it.
  */
 
-const preloadImage = (url: string) => {
-  const img = new Image();
-  img.src = url;
-};
 
 const PokeInfo = () => {
   // React states initializations.
@@ -65,10 +61,7 @@ const PokeInfo = () => {
       toast.error(error + " Failed to fetch Pokémon details."); //If an error occurs hanlde it and raise an error toast
     }
   }, [id]);
-  React.useEffect(() => {
-    preloadImage(sprite);
-    preloadImage(sprite_back);
-  });
+  
   // Wait for the entire info set to be loaded then fetch the text, set it and display everything together without any latencies
   React.useEffect(() => {
     if (id && !flavorText && !isLoading) {

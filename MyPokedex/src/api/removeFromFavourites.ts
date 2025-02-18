@@ -1,39 +1,40 @@
 import toast from "react-hot-toast";
-import { FavouritePokemon } from "./fetchFromAPI";
+import { Pokemon } from "./fetchFromPokeAPI";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_API_URL;
+const SERVER_POKE_REMOVAL_URL = import.meta.env.VITE_SERVER_POKE_REMOVAL_URL;
 
-export const removeFromFavourites = async (number: number) => {
+export const removeFromFavourites = async (sessionID: string, pokeId: number) => {
   // Remove from localStorage immediately
   let updatedFavourites = JSON.parse(
     localStorage.getItem("favouritePokemons") || "[]"
   );
-  updatedFavourites = updatedFavourites.filter((id: number) => id !== number);
+  updatedFavourites = updatedFavourites.filter((id: number) => id !== pokeId);
 
   // Update localStorage with the new list
   localStorage.setItem("favouritePokemons", JSON.stringify(updatedFavourites));
 
   updatedFavourites = updatedFavourites
     ? updatedFavourites.filter(
-        (addedPokemon: FavouritePokemon) => addedPokemon.id !== number
+        (addedPokemon: Pokemon) => addedPokemon.id !== pokeId
       )
     : [];
   
   try {
-    const response = await fetch(SERVER_URL, {
+    console.log(SERVER_POKE_REMOVAL_URL + `?sessionId=${sessionID}&pokeId=${pokeId.toString()}`);
+    const sessionId = encodeURIComponent(sessionID);
+    const response = await fetch(SERVER_POKE_REMOVAL_URL + `?sessionId=${sessionId}&pokeId=${pokeId.toString()}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        id: number,
-      }),
     });
-    if (response.ok) {
-      toast.success(response.status + " pokemon removed");
-    } else toast.error(response.status + " Pokemon isnt removed");
+    const data = await response.json();
+
+    if (data.responseCode === 200) {
+      toast.success(response.status + " " + data.message);
+    } else toast.error(response.status + " " + data.message);
   } catch (error) {
-    toast.error(error + " Something went wrong");
+    console.error(error + " Something went wrong");
   }
   return;
 };

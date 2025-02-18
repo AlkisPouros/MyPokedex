@@ -1,19 +1,11 @@
 import React from "react";
-import {
-  Modal,
-  Button,
-  Typography,
-  tooltipClasses,
-  Tooltip,
-  styled,
-  TooltipProps,
-  Box,
-} from "@mui/material";
+import { Modal, Button, Box } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { AppProvider } from "@toolpad/core";
 import "../index.css";
 import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
+import PokeBallButton from "./PokeBallButton";
 
 type AuthModalPropTypes = {
   login: (username: string, password: string) => void;
@@ -48,17 +40,6 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
     setOpenSignIn(false);
   };
 
-  const BootstrapTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} arrow classes={{ popper: className }} />
-  ))(({ theme }) => ({
-    [`& .${tooltipClasses.arrow}`]: {
-      color: theme.palette.common.black,
-    },
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: theme.palette.common.black,
-    },
-  }));
-
   const signIn = async (username: string, password: string) => {
     console.log(username + " " + password);
     await login(username, password);
@@ -72,20 +53,7 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
   return (
     <>
       <div>
-        <BootstrapTooltip
-          disableInteractive
-          enterDelay={300}
-          leaveDelay={200}
-          title={
-            <React.Fragment>
-              <Typography color="inherit">
-                Please sign in to add a Pokemon
-              </Typography>
-            </React.Fragment>
-          }
-        >
-          <Button onClick={handleOpenSignIn}>sign in</Button>
-        </BootstrapTooltip>
+        <PokeBallButton handleOpenSignIn={handleOpenSignIn} />
         {openSignIn && !openSignUp && (
           <Modal
             open={openSignIn}
@@ -166,6 +134,7 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
                 <SignUpForm
                   signUp={signUp}
                   handleCloseSignUp={handleCloseSignUp}
+                  handleCloseSignIn={handleCloseSignIn}
                 />
               </AppProvider>
             </Box>
