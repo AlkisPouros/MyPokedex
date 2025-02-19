@@ -58,7 +58,7 @@ export const fetchDataFromApi = async (number: number, maxValue: number) => {
       API_URL + `?offset=${number}&limit=${maxValue}`
     );
     const PokeData = await response.json();
-    console.log(PokeData.results);
+    console.log(typeof PokeData.results);
     return PokeData.results;
   } catch (error) {
     toast.error(error + " Something went wrong");

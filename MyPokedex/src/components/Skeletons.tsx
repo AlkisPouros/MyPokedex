@@ -114,7 +114,7 @@ const Skeletons = ({
                     },
                     borderRadius: "8%",
                     margin: "auto",
-                    mt: 5,
+                    mt: 0.5,
                   }}
                 />
               </Grid>

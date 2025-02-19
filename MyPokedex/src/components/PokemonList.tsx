@@ -9,6 +9,7 @@ import {
   getPokemonSprite,
   FIRST_POKEMON_ID,
   LAST_POKEMON_ID,
+  PokemonDataIndexes,
 } from "../api/fetchFromPokeAPI";
 import { askServerForFavePomemon } from "../api/fetchFavouritesFromServer";
 import PaginationOutlined from "./PaginationOutlined";
@@ -56,9 +57,9 @@ const PokemonList = () => {
     queryKey: ["apiData"],
     queryFn: async () =>
       await fetchDataFromApi(FIRST_POKEMON_ID, LAST_POKEMON_ID),
-    onSuccess: (data) => {
+    onSuccess: (data: Pokemon[]) => {
       if (data) {
-        initializeData(data);
+        initializeData(data as Pokemon[]);
       }
     },
     staleTime: 10 * (60 * 1000),
@@ -68,13 +69,15 @@ const PokemonList = () => {
   });
 
   const initializeData = React.useCallback(
-    async (data) => {
+    async (data: Pokemon[]) => {
       if (!data) return;
       console.log(data);
-      const pokemonData = data?.reduce(
+      const pokemonData: { dictionary: PokemonsData; orderList: PokemonDataIndexes } = data.reduce(
         (accumulator, pokemon) => {
           const urlParts = pokemon.url.split("/");
           const pokemonId = parseInt(urlParts[6]);
+  
+          // Ensure correct typing for dictionary
           accumulator.dictionary[pokemonId] = {
             ...pokemon,
             id: pokemonId,
@@ -82,34 +85,39 @@ const PokemonList = () => {
             url: pokemon.url,
             sprites: { front: "", back: "" },
           };
+  
           accumulator.orderList.push(pokemonId);
           return accumulator;
         },
-        { dictionary: {}, orderList: [] }
+        { dictionary: {}, orderList: [] } as { dictionary: PokemonsData; orderList: PokemonDataIndexes } // Explicitly type the initial value
       );
-
+  
       console.log(pokemonData);
-
-      const spritePromises = pokemonData?.orderList.map(async (id) => {
+  
+      // Fetch sprites
+      const spritePromises = pokemonData.orderList.map(async (id) => {
         return getPokemonSprite(id);
       });
-
+  
       const spritesList = await Promise.all(spritePromises);
+  
+      // Ensure spriteData is properly typed
       spritesList.forEach((spriteData) => {
-        pokemonData.dictionary[spriteData.id].sprites.front = spriteData?.front;
-        pokemonData.dictionary[spriteData.id].sprites.back = spriteData?.back;
+        const pokemonId = spriteData?.id as number;
+        if (pokemonData.dictionary[pokemonId as number]) {
+          pokemonData.dictionary[pokemonId].sprites.front = spriteData?.front as string;
+          pokemonData.dictionary[pokemonId].sprites.back = spriteData?.back as string;
+        }
       });
-
+  
       setPokemonData(pokemonData);
       setFilteredPokemon(
-        pokemonData.orderList.map((id) => pokemonData?.dictionary[id])
+        pokemonData.orderList.map((id) => pokemonData.dictionary[id])
       );
-
+  
       // Handle pagination state
       const savedCounter = localStorage.getItem("pokemonCounter");
-      setCounter(
-        savedCounter ? Number(savedCounter) : location?.state?.counter || 0
-      );
+      setCounter(savedCounter ? Number(savedCounter) : location?.state?.counter || 0);
       setTimeout(() => setIsLoading(false), 200);
     },
     [location?.state?.counter]
@@ -164,7 +172,7 @@ const PokemonList = () => {
   // On every app entry and refresh we should also maintain the state for favourite addition for consistency inside the UI.
 
   const fetchFavourites = async (favourites: number[]) => {
-    if (Array.isArray(favourites) && isUserSignedIn) {
+    if (Array.isArray(favourites)) {
       // Extract the `id` field from each object in the response
       setAddedPokemon(favourites.map((id: number) => id));
       localStorage.setItem("addedPokemon", JSON.stringify(favourites));
@@ -274,6 +282,7 @@ const PokemonList = () => {
           favourites?.filter((id) => id !== pokemonId)
         );
         console.log(error);
+        console.log(addedPokemon);
       });
   };
 
@@ -288,7 +297,6 @@ const PokemonList = () => {
 
       {!isLoading ? (
         <>
-         
             <MainPokemonListArea
               isUserSignedIn={isUserSignedIn}
               counter={counter}
