@@ -12,7 +12,7 @@ const Skeletons = ({
 }: SkeletonsProps) => {
   return (
     <>
-      <Box sx={{ width: "100%", maxWidth: 650 }}>
+      <Box>
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={1} sx={{ m: 1.5, justifyContent: "center" }}>
             <Skeleton
@@ -75,53 +75,40 @@ const Skeletons = ({
             </Box>
           </Grid>
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            maxWidth: 650,
-            flexGrow: 2,
-          }}
-        >
+        
           <Grid
             container
             spacing={2}
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              alignItems: "center",
-              p: 2,
+              height: "100%",
+              p: -2,
+              mt: 4,
+              mb: 4,
             }}
+            justifyContent='center'
+            alignItems='center'
           >
             {/** <Skeleton variant="rectangular" /> */}
             {Array.from({ length: skeletons }).map((_, index) => (
               <Grid
-                size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
+                size={{ xs: 12, sm: 6, lg: 4 }}
                 key={index}
-                width="100%"
+                sx={{p : 1 ,maxWidth: 250, minWidth: 250}} 
+                alignItems="center"
               >
                 <Skeleton
                   variant="rectangular"
                   animation="pulse"
                   sx={{
-                    width: { xs: 223.19, sm: 280, md: 195, lg: 195 },
-                    height: { xs: 238.69, sm: 300, md: 210, lg: 210 },
-                    "@media (max-width :650px) and (min-width : 600px)": {
-                      width: 250,
-                    },
+                    width: 234,
+                    height: 244,
                     borderRadius: "8%",
-                    margin: "auto",
-                    mt: 0.5,
                   }}
                 />
               </Grid>
             ))}
           </Grid>
         </Box>
-      </Box>
     </>
   );
 };

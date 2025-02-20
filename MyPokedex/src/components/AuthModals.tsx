@@ -6,6 +6,7 @@ import "../index.css";
 import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 import PokeBallButton from "./PokeBallButton";
+import PokeBall from "../assets/Pokeball.png";
 
 type AuthModalPropTypes = {
   login: (username: string, password: string) => void;
@@ -16,9 +17,9 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
   const [openSignIn, setOpenSignIn] = React.useState<boolean>(false);
 
   const BRANDING = {
-    logo: (
-      <img
-        src="./src/assets/Pokeball.png"
+    logo: (  // TODO : IS THIS NESSECARY ?? 
+      <img    
+        src={PokeBall}
         alt="Pokemon logo"
         style={{ height: 24 }}
       />
@@ -52,7 +53,7 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
 
   return (
     <>
-      <div>
+     
         <PokeBallButton handleOpenSignIn={handleOpenSignIn} />
         {openSignIn && !openSignUp && (
           <Modal
@@ -140,7 +141,7 @@ export default function AuthModals({ login, signup }: AuthModalPropTypes) {
             </Box>
           </Modal>
         )}
-      </div>
+      
     </>
   );
 }

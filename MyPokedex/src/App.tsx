@@ -7,6 +7,8 @@ import Box from "@mui/material/Box";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
 import { createTheme, ThemeProvider } from "@mui/material";
+import Container from '@mui/material/Container';
+
 
 const theme = createTheme({
   palette: {
@@ -32,23 +34,25 @@ function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <Box
-          style={{
-            backgroundSize: "cover",
-            backgroundAttachment: "fixed",
-            backgroundPosition: "center",
-          }}
-        > {/** Setting the toaster for the entire application's notifications */}
-          <Toaster position="top-center" reverseOrder={false} />
-        </Box>
-        <Box sx={{ padding: 2 }}>
-          <img src={pokedexLogo} height={80} alt="Pokedex" />
-        </Box>
-        <Routes>
-          <Route path="/" element={<PokemonList />} />
-          <Route path="/PokeInfo/:id" element={<PokeInfo />} />
-          <Route path="/Favourites" element={<Favourites />} />
-        </Routes>
+        <Container maxWidth="md">
+          <Box
+            style={{
+              backgroundSize: "cover",
+              backgroundAttachment: "fixed",
+              backgroundPosition: "center",
+            }}
+          > {/** Setting the toaster for the entire application's notifications */}
+            <Toaster position="top-center" reverseOrder={false} />
+          </Box>
+          <Box sx={{ padding: 2 }}>
+            <img src={pokedexLogo} height={80} alt="Pokedex" />
+          </Box>
+          <Routes>
+            <Route path="/" element={<PokemonList />} />
+            <Route path="/PokeInfo/:id" element={<PokeInfo />} />
+            <Route path="/Favourites" element={<Favourites />} />
+          </Routes>
+        </Container>
       </ThemeProvider>
     </>
     

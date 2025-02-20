@@ -1,5 +1,6 @@
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
+import PokeBall from "../assets/Pokeball.png";
 
 type SignInFormProps = {
   signIn: (username: string, password: string) => Promise<void>;
@@ -28,7 +29,8 @@ const SignInForm = ({ signIn, handleOpenSignUp }: SignInFormProps) => {
           mr: 2,
         }}
       >
-        <Box><img src="./src/assets/Pokeball.png" height={28} width={28}></img>
+        <Box>
+          <img src={PokeBall} height={28} width={28}></img>
           <Typography variant="h4" color="white" align="center" gutterBottom>
             Login
           </Typography>

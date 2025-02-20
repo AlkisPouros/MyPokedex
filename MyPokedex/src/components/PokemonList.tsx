@@ -18,7 +18,7 @@ import { Box } from "@mui/material";
 import "../index.css";
 import { useAuth } from "../AuthProvider";
 import MainPokemonListArea from "./MainPokemonListArea";
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 /* This is the pokemon list component, the main screen of the application.
    Here After fetching the first 151 Kanto pokemon of the ,using the pokeAPI, we map the pokemon storing them inside an array in order to hanlde the PAGINATION EFFECT. 
@@ -38,10 +38,6 @@ const PokemonList = () => {
   const { isUserSignedIn } = useAuth();
   const [filteredPokemon, setFilteredPokemon] = React.useState<Pokemon[]>([]);
   const [counter, setCounter] = React.useState<number>(0);
-  // TODO: CHECK WHAT WILL BE DONE WITH THIS ONE
-  const [addedPokemon, setAddedPokemon] = React.useState<number[] | undefined>(
-    []
-  );
   const queryClient = useQueryClient();
   const [userName, setuserName] = React.useState<string | null>(null);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
@@ -72,11 +68,14 @@ const PokemonList = () => {
     async (data: Pokemon[]) => {
       if (!data) return;
       console.log(data);
-      const pokemonData: { dictionary: PokemonsData; orderList: PokemonDataIndexes } = data.reduce(
+      const pokemonData: {
+        dictionary: PokemonsData;
+        orderList: PokemonDataIndexes;
+      } = data.reduce(
         (accumulator, pokemon) => {
           const urlParts = pokemon.url.split("/");
           const pokemonId = parseInt(urlParts[6]);
-  
+
           // Ensure correct typing for dictionary
           accumulator.dictionary[pokemonId] = {
             ...pokemon,
@@ -85,39 +84,46 @@ const PokemonList = () => {
             url: pokemon.url,
             sprites: { front: "", back: "" },
           };
-  
+
           accumulator.orderList.push(pokemonId);
           return accumulator;
         },
-        { dictionary: {}, orderList: [] } as { dictionary: PokemonsData; orderList: PokemonDataIndexes } // Explicitly type the initial value
+        { dictionary: {}, orderList: [] } as {
+          dictionary: PokemonsData;
+          orderList: PokemonDataIndexes;
+        } // Explicitly type the initial value
       );
-  
+
       console.log(pokemonData);
-  
+
       // Fetch sprites
       const spritePromises = pokemonData.orderList.map(async (id) => {
         return getPokemonSprite(id);
       });
-  
+
       const spritesList = await Promise.all(spritePromises);
-  
+
       // Ensure spriteData is properly typed
       spritesList.forEach((spriteData) => {
         const pokemonId = spriteData?.id as number;
         if (pokemonData.dictionary[pokemonId as number]) {
-          pokemonData.dictionary[pokemonId].sprites.front = spriteData?.front as string;
-          pokemonData.dictionary[pokemonId].sprites.back = spriteData?.back as string;
+          pokemonData.dictionary[pokemonId].sprites.front =
+            spriteData?.front as string;
+          pokemonData.dictionary[pokemonId].sprites.back =
+            spriteData?.back as string;
         }
       });
-  
+
       setPokemonData(pokemonData);
       setFilteredPokemon(
         pokemonData.orderList.map((id) => pokemonData.dictionary[id])
       );
-  
+
       // Handle pagination state
       const savedCounter = localStorage.getItem("pokemonCounter");
-      setCounter(savedCounter ? Number(savedCounter) : location?.state?.counter || 0);
+      setCounter(
+        savedCounter ? Number(savedCounter) : location?.state?.counter || 0
+      );
       setTimeout(() => setIsLoading(false), 200);
     },
     [location?.state?.counter]
@@ -128,11 +134,13 @@ const PokemonList = () => {
     queryFn: async () =>
       await askServerForFavePomemon(sessionId as string, pokemonData),
     onSuccess: (favourites) => {
-      fetchFavourites(favourites?.FavouritePokemonID as number[]);
+       // Extract the `id` field from each object in the response
+       (favourites?.FavouritePokemonID as number[]).map((id: number) => id);
+       localStorage.setItem("favourites", JSON.stringify(favourites));;
     },
     staleTime: 10 * (60 * 1000),
     cacheTime: 15 * (60 * 1000),
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     enabled: !!sessionId,
   });
   React.useEffect(() => {
@@ -168,19 +176,6 @@ const PokemonList = () => {
       console.log(isLoading + " Fetching completed");
     }
   }, [refetch, isLoading, filteredPokemon]);
-
-  // On every app entry and refresh we should also maintain the state for favourite addition for consistency inside the UI.
-
-  const fetchFavourites = async (favourites: number[]) => {
-    if (Array.isArray(favourites)) {
-      // Extract the `id` field from each object in the response
-      setAddedPokemon(favourites.map((id: number) => id));
-      localStorage.setItem("addedPokemon", JSON.stringify(favourites));
-    } else {
-      console.error("Unexpected response format from the server");
-      setAddedPokemon([]);
-    }
-  };
 
   const handleInputChange = (value: string) => {
     setSearchValue(value);
@@ -263,28 +258,46 @@ const PokemonList = () => {
       toast.error("You need to sign in first");
       return;
     }
-
-    // Optimistically update UI before the API request
-    setAddedPokemon((prev) =>
-      prev?.includes(pokemonId)
-        ? prev?.filter((id) => id !== pokemonId)
-        : [...(prev as number[]), pokemonId]
-    );
-    addToFavourites(pokemonId, sessionId as string)
-      .then((res) => {
-        if (res?.ok) {
-          queryClient.invalidateQueries(["favourites", sessionId as string]);
-        }
-      })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .catch((error) => {
-        setAddedPokemon((favourites) =>
-          favourites?.filter((id) => id !== pokemonId)
-        );
-        console.log(error);
-        console.log(addedPokemon);
-      });
+    addFavouritePokemonMutation.mutate(pokemonId);
   };
+  const addFavouritePokemonMutation = useMutation({
+    mutationFn: (pokemonId: number) =>
+      addToFavourites(pokemonId as unknown as number, sessionId as string),
+    onMutate: async (pokemonId: number) => {
+      await queryClient.cancelQueries({
+        queryKey: ["favourites", sessionId as string],
+      });
+
+      const previousFavourites =
+        queryClient.getQueryData<number[]>([
+          "favourites",
+          sessionId as string,
+        ]) || [];
+        
+    // Optimistically update the cache
+    queryClient.setQueryData<{ FavouritePokemonID: number[] }>(["favourites", sessionId], (oldData) => {
+      const oldFavs = oldData?.FavouritePokemonID ?? [];
+        return {
+          ...oldData,
+          FavouritePokemonID: oldFavs.includes(pokemonId)
+            ? oldFavs.filter((id) => id !== pokemonId)
+            : [...oldFavs, pokemonId],
+        };
+      });
+      return { previousFavourites };
+    },
+    onError: (err, pokemonId, context) => {
+      console.error(err);
+      console.log(pokemonId);
+      if(context?.previousFavourites)
+        queryClient.setQueryData(["favourites"], context?.previousFavourites);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["favourites", sessionId as string],
+      });
+    },
+  });
 
   // Function to sync the changes between the
   const handlePageChange = (page: number) => {
@@ -297,18 +310,18 @@ const PokemonList = () => {
 
       {!isLoading ? (
         <>
-            <MainPokemonListArea
-              isUserSignedIn={isUserSignedIn}
-              counter={counter}
-              searchValue={searchValue}
-              sessionId={sessionId as string}
-              filteredPokemon={filteredPokemon}
-              pokemonData={pokemonData}
-              addedPokemon={favourites?.FavouritePokemonID as number[]}
-              handleAddToFavourites={handleAddToFavourites}
-              handleInputChange={handleInputChange}
-              handleInputClick={handleInputClick}
-            />
+          <MainPokemonListArea
+            isUserSignedIn={isUserSignedIn}
+            counter={counter}
+            searchValue={searchValue}
+            sessionId={sessionId as string}
+            filteredPokemon={filteredPokemon}
+            pokemonData={pokemonData}
+            addedPokemon={favourites?.FavouritePokemonID as number[]}
+            handleAddToFavourites={handleAddToFavourites}
+            handleInputChange={handleInputChange}
+            handleInputClick={handleInputClick}
+          />
           <Box
             sx={{
               display: "flex",

@@ -1,12 +1,17 @@
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
+import PokeBall from "../assets/Pokeball.png";
 
 type SignUpFormProps = {
   signUp: (username: string, password: string) => void;
   handleCloseSignUp: () => void;
   handleCloseSignIn: () => void;
 };
-const SignUpForm = ({ signUp ,handleCloseSignUp, handleCloseSignIn }: SignUpFormProps) => {
+const SignUpForm = ({
+  signUp,
+  handleCloseSignUp,
+  handleCloseSignIn,
+}: SignUpFormProps) => {
   const [userName, setuserName] = useState("");
   const [password, setPassword] = useState("");
   const [userNameError, setuserNameError] = useState("");
@@ -58,7 +63,7 @@ const SignUpForm = ({ signUp ,handleCloseSignUp, handleCloseSignIn }: SignUpForm
         }}
       >
         <Box>
-          <img src="./src/assets/Pokeball.png" height={28} width={28}></img>
+          <img src={PokeBall} height={28} width={28}></img>
           <Typography variant="h5" color="white" align="center" gutterBottom>
             Create an Account
           </Typography>

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { askServerForFavePomemon } from "../api/fetchFavouritesFromServer";
 import { removeFromFavourites } from "../api/removeFromFavourites";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CardActionArea,
   CardMedia,
@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Pokemon, PokemonsData } from "../api/fetchFromPokeAPI";
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 /**
  * This is the Favourites component
@@ -29,23 +29,67 @@ const Favourites = () => {
   const location = useLocation();
   const { FavPokeArrayLength, sessionId, pokemonData } = location.state || {};
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const queryClient = useQueryClient(); 
-  
+  const queryClient = useQueryClient();
+
   const { data: favourites } = useQuery({
-    queryKey: ["favourites"],
-    queryFn: async () => await askServerForFavePomemon(sessionId as string, pokemonData as {
-        dictionary: PokemonsData;
-        orderList: number[];
-      } | null ),
+    queryKey: ["favourites",sessionId],
+    queryFn: async () =>
+      await askServerForFavePomemon(
+        sessionId as string,
+        pokemonData as {
+          dictionary: PokemonsData;
+          orderList: number[];
+        } | null
+      ),
     onSuccess: () => {
       setIsLoading(false);
-    }
-  })
+    },
+  });
+  const removeFavouritePokemon = useMutation({
+    mutationFn: (id: number) => removeFromFavourites(sessionId as string, id),
+    onMutate: async (pokemonId: number) => {
+      await queryClient.cancelQueries({ queryKey: ["favourites", sessionId as string] });
+      const previousFavourites = queryClient.getQueryData<{
+        FavouritePokemon: Pokemon[];
+      }>(["favourites", sessionId as string]);
 
+      // Optimistically update cache
+      queryClient.setQueryData(
+        ["favourites", sessionId as string],
+        (
+          prev:
+            | {
+                FavouritePokemon: Pokemon[];
+              }
+            | undefined
+        ) => {
+          if (!prev) return { FavouritePokemon: [] };
+          return {
+            ...prev,
+            FavouritePokemon: prev.FavouritePokemon.filter(
+              (poke: Pokemon) => poke.id !== pokemonId
+            ) ?? [],
+          };
+        }
+      );
+      return { previousFavourites };
+    },
+    onError: (err, pokemonId, context) => {
+      console.log(err);
+      console.log(pokemonId);
+      if (context?.previousFavourites)
+        queryClient.setQueryData(["favourites",sessionId as string], context?.previousFavourites);
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["favourites",sessionId], 
+      });
+      await queryClient.refetchQueries(["favourites", sessionId]);
+    },
+  });
 
-  const RemoveFromFavouritePokeList = async (sessionId: string, id: number) => {
-    await removeFromFavourites(sessionId, id);
-    queryClient.invalidateQueries(["favourites"]);
+  const HandleRemoveFromFavouritePokeList = async (id: number) => {
+    removeFavouritePokemon.mutate(id);
   };
 
   const [screenSize, setScreenSize] = React.useState({
@@ -60,7 +104,7 @@ const Favourites = () => {
   const updateScreenSize = () => {
     setScreenSize({ columns: 1, cardWidth: 225, cardHeight: 207 });
   };
-  
+
   // Execute the update function on every render.
   React.useEffect(() => {
     if (isLoading) {
@@ -78,25 +122,26 @@ const Favourites = () => {
         <>
           <List>
             {/** If there are no favorite pokemon display the below message */}
-            {favourites?.FavouritePokemon && (favourites?.FavouritePokemon as Pokemon[]).length === 0 && (
-              <ListItem sx={{ justifyContent: "center" }}>
-                <Box
-                  textAlign="left"
-                  sx={{
-                    backgroundColor: "white",
-                    borderStyle: "solid",
-                    borderColor: "black",
-                    p: 2,
-                    borderRadius: 10,
-                  }}
-                >
-                  <Box sx={{ height: "50%", backgroundColor: "red" }}></Box>
-                  <Typography p={{ pr: 1 }} style={{ color: "black" }}>
-                    No Pokémon Added
-                  </Typography>
-                </Box>
-              </ListItem>
-            )}
+            {favourites?.FavouritePokemon &&
+              (favourites?.FavouritePokemon as Pokemon[]).length === 0 && (
+                <ListItem sx={{ justifyContent: "center" }}>
+                  <Box
+                    textAlign="left"
+                    sx={{
+                      backgroundColor: "white",
+                      borderStyle: "solid",
+                      borderColor: "black",
+                      p: 2,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Box sx={{ height: "50%", backgroundColor: "red" }}></Box>
+                    <Typography p={{ pr: 1 }} style={{ color: "black" }}>
+                      No Pokémon Added
+                    </Typography>
+                  </Box>
+                </ListItem>
+              )}
             {/** From the favorite pokemon list render the pokemon fetched from the server*/}
             {favourites?.FavouritePokemon &&
               (favourites?.FavouritePokemon as Pokemon[]).map((info) => (
@@ -133,15 +178,14 @@ const Favourites = () => {
                           </Typography>
 
                           <Button
-                            sx={{ backgroundColor: "transparent", m : 1 }}
+                            sx={{ backgroundColor: "transparent", m: 1 }}
                             onClick={() =>
-                              RemoveFromFavouritePokeList(
-                                sessionId as string,
+                              HandleRemoveFromFavouritePokeList(
                                 Object.values(info)[2] as number
                               )
                             }
                           >
-                            <DeleteIcon style={{color: "black"}} />
+                            <DeleteIcon style={{ color: "black" }} />
                           </Button>
                         </Box>
                       </Grid>

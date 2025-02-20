@@ -105,6 +105,7 @@ const PokeInfo = () => {
               width: "50%",
               borderRadius: "8%",
               m: "auto",
+              mt: 2,
               boxShadow: 3,
             }}
           >

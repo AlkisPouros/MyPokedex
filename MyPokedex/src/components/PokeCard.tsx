@@ -4,13 +4,13 @@ import {
   Card,
   CardActionArea,
   CardMedia,
+  Stack,
   Typography,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { Link } from "react-router-dom";
 import { Pokemon } from "../api/fetchFromPokeAPI";
-
 
 type PokeCardProps = {
   pokemonId: number;
@@ -28,73 +28,41 @@ export default function PokeCard({
   pokemonId,
   pokeName,
   counter,
-  filteredPokemon,
   sprite_front,
   sprite_back,
   addedPokemon,
   isUserSignedIn,
   handleAddToFavourites,
 }: PokeCardProps) {
-
   
+
   return (
     <>
-      <Card
+      <Stack
+        component={Card}
         className="card"
         sx={{
-          width: "100%",
-          alignItems: "center",
           borderRadius: "8%",
-          "@media ((min-width: 600px) and (max-width: 800px))": {
-            width:
-              filteredPokemon.length > 3
-                ? "100%"
-                : filteredPokemon.length === 1
-                  ? 250
-                  : 250,
-            ml: filteredPokemon.length === 1 ? -3 : 0,
-          },
-          "@media (min-width: 800px) and (max-width: 900px)": {
-            width:
-              filteredPokemon.length > 3
-                ? "100%"
-                : filteredPokemon.length === 1
-                  ? 300
-                  : 300,
-            ml: filteredPokemon.length === 1 ? -6 : 0,
-          },
-          "@media (min-width: 900px)": {
-            width:
-              filteredPokemon.length > 3
-                ? 200
-                : filteredPokemon.length === 1
-                  ? 200
-                  : 200,
-            ml : filteredPokemon.length === 2 ? -4.5 : filteredPokemon.length === 1 ? -4 : 0,
-          },
-          "@media (max-width: 600px) and (min-width: 400px)": {
-            width: "80%",
-            ml : filteredPokemon.length === 1 ? 3 : 4,
-          },
         }}
+        alignItems="center"
+        
       >
-        {addedPokemon && addedPokemon?.includes(Number(pokemonId)) && isUserSignedIn ? (
-          <Box textAlign="right">
+        <Box sx={{ alignSelf: "flex-end" }}>
+          {addedPokemon &&
+          addedPokemon?.includes(Number(pokemonId)) &&
+          isUserSignedIn ? (
             <Button variant="text">
               <FavoriteIcon style={{ color: "red" }} />
             </Button>
-          </Box>
-        ) : (
-          <Box textAlign="right">
+          ) : (
             <Button
-              sx={{ textAlign: "right" }}
               variant="text"
               onClick={() => handleAddToFavourites(Number(pokemonId))}
             >
               <FavoriteBorderIcon style={{ color: "black" }} />
             </Button>
-          </Box>
-        )}
+          )}
+        </Box>
         <Link
           className="no-hover"
           to={`/PokeInfo/${Number(pokemonId)}`}
@@ -106,12 +74,17 @@ export default function PokeCard({
             counter: counter,
           }}
         >
-          <CardActionArea sx={{ textAlign: "center", width: "100%" }}>
+          <CardActionArea
+            sx={{
+              textAlign: "center",
+              minWidth: "15rem",
+            }}
+          >
             <CardMedia
               component="img"
               image={sprite_front}
               alt={pokeName}
-              style={{ width: "60%", margin: "auto" }}
+              style={{ width: "9rem", margin: "auto" }}
             />
             <Box sx={{ mb: 2 }}>
               <Typography variant="body1" component="div" className="card-text">
@@ -123,7 +96,7 @@ export default function PokeCard({
             </Box>
           </CardActionArea>
         </Link>
-      </Card>
+      </Stack>
     </>
   );
 }

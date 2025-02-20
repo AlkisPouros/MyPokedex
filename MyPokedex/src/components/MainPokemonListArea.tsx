@@ -18,6 +18,7 @@ import { Pokemon, PokemonsData } from "../api/fetchFromPokeAPI";
 import AuthModals from "./AuthModals";
 import PokeCard from "./PokeCard";
 import { useAuth } from "../AuthProvider";
+import "../index.css"
 
 type MainPokemonListAreaProps = {
   isUserSignedIn: boolean;
@@ -64,45 +65,38 @@ export default function MainPokemonListArea({
   return (
 
     <>
-          <Box sx={{ width: "100%", maxWidth: 650 }}>
+          <Box>
             <nav aria-label="main mailbox folders"></nav>
             <Box sx={{ flexGrow: 1 }}>
               <Grid container spacing={1} sx={{ m: 1.5, justifyContent: "center" }}>
-                <SearchBar
-                  onInputChange={handleInputChange}
-                  onSearchClick={handleInputClick}
-                  searchValue={searchValue}
-                />
-                {addedPokemon && addedPokemon?.length !== 0 && isUserSignedIn ? (
+                  <SearchBar
+                    onInputChange={handleInputChange}
+                    onSearchClick={handleInputClick}
+                    searchValue={searchValue}
+            />
                   <IconButton
-                    className="no-hover"
-                    sx={{ borderRadius: "5px", backgroundColor: "black", p: "5px" }}
+                      className="no-hover"
+                      sx={{ borderRadius: "5px", p: "5px", backgroundColor: "black" }}
                   >
-                    <Link
-                      to={"/Favourites"}
-                      style={{ height: 24 }}
-                      state={{
-                        FavPokeArrayLength: addedPokemon?.length,
-                        sessionId: sessionId as string,
-                        pokemonData: pokemonData,
-                      }}
-                    >
-                      <FavoriteIcon style={{ color: "red" }} />
-                    </Link>
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    className="no-hover"
-                    sx={{ borderRadius: "5px", p: "5px", backgroundColor: "black" }}
-                  >
-                    <FavoriteIcon style={{ color: "white" }} />
-                  </IconButton>
-                )}
+                  {addedPokemon && addedPokemon?.length !== 0 && isUserSignedIn ? (
+                      <Link
+                        to={"/Favourites"}
+                        style={{ height: 24 }}
+                        state={{
+                          FavPokeArrayLength: addedPokemon?.length,
+                          sessionId: sessionId as string,
+                          pokemonData: pokemonData,
+                        }}
+                      >
+                        <FavoriteIcon style={{ color: "red" }} />
+                      </Link>
+                  ) : (
+                      <FavoriteIcon style={{ color: "white" }} />
+                  )}</IconButton>
                 <Box
                   sx={{
                     width: "100%",
                     height: "50%",
-                    maxWidth: 650,
                     mt: 2,
                     display: "flex",
                     justifyContent: "center",
@@ -119,6 +113,7 @@ export default function MainPokemonListArea({
                   >
                     {isUserSignedIn ? (
                       <>
+                      
                         <Box
                           sx={{
                             backgroundColor: "white",
@@ -127,6 +122,7 @@ export default function MainPokemonListArea({
                             p: 2,
                             borderRadius: 2,
                             width: "50%",
+                            minHeight: "20px", // TO BE CHECKED
                           }}
                         >
                           <Typography
@@ -154,7 +150,8 @@ export default function MainPokemonListArea({
                           >
                             <KeyboardBackspaceIcon style={{ color: "white" }} />
                           </Button>
-                        </BootstrapTooltip>
+                      </BootstrapTooltip>
+                        
                       </>
                     ) : (
                       <>
@@ -164,20 +161,21 @@ export default function MainPokemonListArea({
                   </Box>
                 </Box>
               </Grid>
-            </Box>
-           {filteredPokemon.length > 0 ? (
+        </Box>
+        
+        {filteredPokemon.length > 0 ? (
+          
               <Grid
                 container
-                spacing={filteredPokemon.length === 2 ? 0 : 2}
+                spacing={2}
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
                   height: "100%",
-                  p: 2,
-                  gap: filteredPokemon.length === 2 ? "70px" : "14px", 
+                  p: -2,
+                  mt: 4,
+                  mb: 4,
                 }}
-                size={{ xs: 5 }}
+            justifyContent='center'
+            alignItems='center'
               >
                 {filteredPokemon.slice(counter, counter + 12).map((pokemon) => {
                   const pokemonId = pokemon?.id;
@@ -188,10 +186,11 @@ export default function MainPokemonListArea({
                     pokemonData?.dictionary[pokemonId]?.sprites.back;
 
                   return (
-                    
                       <Grid
-                        key={Number(pokemonId)}
-                        size={{ xs: 8, sm: 6, md: 4, lg: 4 }}                      
+                      key={Number(pokemonId)}
+                      size={{ xs : 12, sm: 6, lg: 4 }} 
+                      sx={{ p: 1, minWidth: 250, maxWidth: 250}} 
+                      alignItems="center"
                       >
                         {sprite_front && (
                           <PokeCard

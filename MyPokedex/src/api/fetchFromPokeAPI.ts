@@ -85,7 +85,6 @@ export const addToFavourites = async (
     toast.success(data.message);
   else
     toast.error(data.message);
-  return response;
 };
 
 //Fetching from PokeAPI the pokemon description

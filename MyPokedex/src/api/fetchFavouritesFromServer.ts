@@ -56,7 +56,6 @@ export const askServerForFavePomemon = async (
     }
     const data = await response.json();
     if (data.responseCode === 200 && data.FavouritePokemon.length > 0) {
-      toast.success(data.message);
       const FavouritePokemonID = data.FavouritePokemon;
       const FavouritePokemon = buildUpPokemonData(
         FavouritePokemonID as number[],
